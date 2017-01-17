@@ -7,18 +7,22 @@
 // Sets default values
 AAlienShipPreset::AAlienShipPreset()
 {
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh(TEXT("StaticMesh'/Game/SpaceShip1'"));
-	static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("MaterialInstanceConstant'/Game/lambert1'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh1(TEXT("StaticMesh'/Game/SpaceShip1'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material1(TEXT("MaterialInstanceConstant'/Game/lambert1'"));
 
-	UStaticMeshComponent* StaticMeshComp = GetStaticMeshComponent();
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh2(TEXT("StaticMesh'/Game/SpaceShip2'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material2(TEXT("MaterialInstanceConstant'/Game/lambert1'"));
 
-	StaticMeshComp->SetStaticMesh(StaticMesh.Object);
-	StaticMeshComp->SetMaterial(0, Material.Object);
-	
-	// Set the collision parameters...
-	StaticMeshComp->bGenerateOverlapEvents = true;
-	StaticMeshComp->SetNotifyRigidBodyCollision(true);
-	StaticMeshComp->Mobility = EComponentMobility::Movable;
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh3(TEXT("StaticMesh'/Game/SpaceShip3'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material3(TEXT("MaterialInstanceConstant'/Game/lambert1'"));
+
+	Mesh1 = StaticMesh1.Object;
+	Mesh2 = StaticMesh2.Object;
+	Mesh3 = StaticMesh3.Object;
+
+	MeshMaterial1 = Material1.Object;
+	MeshMaterial2 = Material2.Object;
+	MeshMaterial3 = Material3.Object;
 }
 
 // Called when the game starts or when spawned
@@ -43,4 +47,35 @@ void AAlienShipPreset::SetPosition(const FVector Location)
 FVector AAlienShipPreset::GetPosition()
 {
 	return GetTransform().GetLocation();
+}
+
+void AAlienShipPreset::SetMeshNum(int32 n)
+{
+	
+
+	UStaticMeshComponent* StaticMeshComp = GetStaticMeshComponent();
+	StaticMeshComp->Mobility = EComponentMobility::Movable;
+	if (n == 0)
+	{
+		StaticMeshComp->SetStaticMesh(Mesh1);
+		StaticMeshComp->SetMaterial(0, MeshMaterial1);
+	}
+	if (n == 1)
+	{
+		StaticMeshComp->SetStaticMesh(Mesh2);
+		StaticMeshComp->SetMaterial(0, MeshMaterial2);
+	}
+
+	if (n == 2)
+	{
+		StaticMeshComp->SetStaticMesh(Mesh3);
+		StaticMeshComp->SetMaterial(0, MeshMaterial3);
+	}
+
+	// Set the collision parameters...
+	StaticMeshComp->bGenerateOverlapEvents = true;
+	StaticMeshComp->SetNotifyRigidBodyCollision(true);
+	
+
+	UE_LOG(LogTemp, Warning, TEXT("ID: %i"), n);
 }

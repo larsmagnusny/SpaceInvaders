@@ -26,6 +26,10 @@ public:
 	void MoveRight();
 	void StopMoveRight();
 	void Fire();
+	void Die();
+
+	UFUNCTION()
+	void OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor);
 
 private:
 	bool MovingLeft = false;

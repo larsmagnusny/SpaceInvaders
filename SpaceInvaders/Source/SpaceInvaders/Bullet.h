@@ -26,8 +26,6 @@ public:
 
 	FVector GetPosition();
 
-	class USphereComponent* Sphere1;
-
 	UFUNCTION()
 	void OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor);
 

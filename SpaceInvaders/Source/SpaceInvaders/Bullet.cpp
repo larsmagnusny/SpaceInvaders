@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SpaceInvaders.h"
+#include "AlienShipPreset.h"
 #include "Bullet.h"
 #include "GameModeClass.h"
 
@@ -71,7 +72,13 @@ void ABullet::OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor)
 
 	if (OtherActor && MyOverlappedActor)
 	{
-		OtherActor->Destroy(false, false);
+		AAlienShipPreset* test = (AAlienShipPreset*)OtherActor;
+		
+		if (test)
+		{
+			test->needDelete = true;
+		}
+
 		MyOverlappedActor->Destroy(false, false);
 	}
 }

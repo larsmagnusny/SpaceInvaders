@@ -24,5 +24,18 @@ public:
 
 	FVector GetPosition();
 
+	void SetMeshNum(int32 n);
+
 	bool needDelete = false;
+
+	UStaticMesh* Mesh1;
+	UStaticMesh* Mesh2;
+	UStaticMesh* Mesh3;
+
+	UMaterial* MeshMaterial1;
+	UMaterial* MeshMaterial2;
+	UMaterial* MeshMaterial3;
+
+private:
+	int32 MeshNum = 0;
 };

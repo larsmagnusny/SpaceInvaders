@@ -12,7 +12,16 @@ USpaceShipController::USpaceShipController()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	//UStaticMeshComponent* StaticMeshComp = (UStaticMeshComponent*)GetOwner()->GetComponentByClass(UStaticMeshComponent::StaticClass());
+	//StaticMeshComp->bGenerateOverlapEvents = true;
+	//StaticMeshComp->SetNotifyRigidBodyCollision(true);
+	//StaticMeshComp->Mobility = EComponentMobility::Movable;
+
+	//StaticMeshComp->SetCollisionProfileName(FName("OverlapAll"));
+	//StaticMeshComp->MoveIgnoreActors.Add(GetOwner());
+
+	//GetOwner()->OnActorBeginOverlap.AddDynamic(this, &USpaceShipController::OnOverlapBegin);
+	//GetOwner()->OnActorBeginOverlap.
 }
 
 
@@ -20,6 +29,9 @@ USpaceShipController::USpaceShipController()
 void USpaceShipController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Set up Collisions
+	GetOwner()->OnActorBeginOverlap.AddDynamic(this, &USpaceShipController::OnOverlapBegin);
 
 	// Set up KeyBindings
 	UInputComponent* InputComponent = GetWorld()->GetFirstPlayerController()->InputComponent;
@@ -68,7 +80,7 @@ void USpaceShipController::Fire()
 	FVector ourLocation = GetOwner()->GetActorLocation();
 
 	FTransform t = FTransform();
-	t.SetLocation(ourLocation);
+	t.SetLocation(ourLocation + FVector(0.f, 500.f, 0));
 	t.SetScale3D(FVector(10.f, 10.f, 10.f));
 	t.SetRotation(FQuat::MakeFromEuler(FVector(0.0f, 0.0f, -90.f)));
 	GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), t);
@@ -89,14 +101,14 @@ void USpaceShipController::TickComponent( float DeltaTime, ELevelTick TickType, 
 		FTransform ShipTransform = GetOwner()->GetTransform();
 		FVector ShipPosition = ShipTransform.GetLocation();
 
-		if (ShipPosition.X < 6600.0f) {
+		if (ShipPosition.X < 10000.0f) {
 			// Add to the X axis...
 			ShipPosition.X += Speed*DeltaTime;
 			ShipTransform.SetLocation(ShipPosition);
 			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
 		}
 		else {
-			ShipPosition.X = 6600.0f;
+			ShipPosition.X = 10000.0f;
 			ShipTransform.SetLocation(ShipPosition);
 			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
 		}
@@ -108,7 +120,7 @@ void USpaceShipController::TickComponent( float DeltaTime, ELevelTick TickType, 
 		FTransform ShipTransform = GetOwner()->GetTransform();
 		FVector ShipPosition = ShipTransform.GetLocation();
 
-		if (ShipPosition.X > -6660.0f)
+		if (ShipPosition.X > -10000.0f)
 		{
 			// Add to the X axis...
 			ShipPosition.X -= Speed*DeltaTime;
@@ -116,7 +128,7 @@ void USpaceShipController::TickComponent( float DeltaTime, ELevelTick TickType, 
 			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
 		}
 		else {
-			ShipPosition.X = -6660.0f;
+			ShipPosition.X = -10000.0f;
 			ShipTransform.SetLocation(ShipPosition);
 			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
 		}
@@ -124,3 +136,7 @@ void USpaceShipController::TickComponent( float DeltaTime, ELevelTick TickType, 
 	}
 }
 
+void USpaceShipController::OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Something is hitting me!?"));
+}

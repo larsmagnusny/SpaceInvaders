@@ -18,6 +18,8 @@ AAlienShip_Second::AAlienShip_Second()
 	StaticMeshComp->SetNotifyRigidBodyCollision(true);
 	StaticMeshComp->Mobility = EComponentMobility::Movable;
 
+	
+
 }
 
 // Called when the game starts or when spawned
