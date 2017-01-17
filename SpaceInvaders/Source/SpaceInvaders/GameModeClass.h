@@ -14,6 +14,8 @@ class SPACEINVADERS_API AGameModeClass : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+	AGameModeClass();
+	virtual void TickActor(float DeltaTime, ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
 	virtual void BeginPlay() override;
 
 	TArray<AActor*> AlienArray;

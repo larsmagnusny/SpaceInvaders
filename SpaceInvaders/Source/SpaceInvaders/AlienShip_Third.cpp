@@ -14,6 +14,10 @@ AAlienShip_Third::AAlienShip_Third()
 	StaticMeshComp->SetStaticMesh(StaticMesh.Object);
 	StaticMeshComp->SetMaterial(0, Material.Object);
 
+	StaticMeshComp->bGenerateOverlapEvents = true;
+	StaticMeshComp->SetNotifyRigidBodyCollision(true);
+	StaticMeshComp->Mobility = EComponentMobility::Movable;
+
 }
 
 // Called when the game starts or when spawned

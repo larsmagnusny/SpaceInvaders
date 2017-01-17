@@ -30,4 +30,6 @@ public:
 private:
 	bool MovingLeft = false;
 	bool MovingRight = false;
+
+	float Speed = 5000.f;
 };

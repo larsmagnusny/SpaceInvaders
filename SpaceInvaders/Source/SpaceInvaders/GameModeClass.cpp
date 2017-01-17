@@ -6,9 +6,15 @@
 #include "AlienShip_Second.h"
 #include "AlienShip_Third.h"
 
+AGameModeClass::AGameModeClass()
+{
+	PrimaryActorTick.bCanEverTick = true;
+}
+
 void AGameModeClass::BeginPlay()
 {
 	Super::BeginPlay();
+
 	UWorld* const World = GetWorld();
 
 	float StartX = 6800.0f;
@@ -28,7 +34,7 @@ void AGameModeClass::BeginPlay()
 			for (int32 j = 0; j < 16; ++j) {
 				FTransform t = FTransform();
 				t.SetLocation(FVector(StartX - (900.0f*j), StartY - (1000.0*i), 0.f));
-				t.SetScale3D(FVector(7.f, 7.f, 7.f));
+				t.SetScale3D(FVector(9.f, 9.f, 9.f));
 				t.SetRotation(FQuat::MakeFromEuler(FVector(0.0f, 0.0f, 90.0f)));
 				AlienArray.Add(World->SpawnActor<AAlienShip_Second>(AAlienShip_Second::StaticClass(), t));
 			}
@@ -45,4 +51,11 @@ void AGameModeClass::BeginPlay()
 			}
 		}
 	}
+}
+
+void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickFunction& ThisTickFunction)
+{
+	Super::TickActor( DeltaTime, TickType, ThisTickFunction );
+
+	
 }

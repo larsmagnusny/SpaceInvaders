@@ -2,6 +2,7 @@
 
 #include "SpaceInvaders.h"
 #include "SpaceShipController.h"
+#include "Bullet.h"
 
 
 // Sets default values for this component's properties
@@ -63,6 +64,14 @@ void USpaceShipController::StopMoveRight()
 void USpaceShipController::Fire()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Should be moving Firing"));
+
+	FVector ourLocation = GetOwner()->GetActorLocation();
+
+	FTransform t = FTransform();
+	t.SetLocation(ourLocation);
+	t.SetScale3D(FVector(10.f, 10.f, 10.f));
+	t.SetRotation(FQuat::MakeFromEuler(FVector(0.0f, 0.0f, -90.f)));
+	GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), t);
 }
 
 // Called every frame
@@ -80,10 +89,17 @@ void USpaceShipController::TickComponent( float DeltaTime, ELevelTick TickType, 
 		FTransform ShipTransform = GetOwner()->GetTransform();
 		FVector ShipPosition = ShipTransform.GetLocation();
 
-		// Add to the X axis...
-		ShipPosition.X += 50;
-		ShipTransform.SetLocation(ShipPosition);
-		GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+		if (ShipPosition.X < 6600.0f) {
+			// Add to the X axis...
+			ShipPosition.X += Speed*DeltaTime;
+			ShipTransform.SetLocation(ShipPosition);
+			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+		}
+		else {
+			ShipPosition.X = 6600.0f;
+			ShipTransform.SetLocation(ShipPosition);
+			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+		}
 		return;
 	}
 
@@ -92,10 +108,18 @@ void USpaceShipController::TickComponent( float DeltaTime, ELevelTick TickType, 
 		FTransform ShipTransform = GetOwner()->GetTransform();
 		FVector ShipPosition = ShipTransform.GetLocation();
 
-		// Add to the X axis...
-		ShipPosition.X -= 50;
-		ShipTransform.SetLocation(ShipPosition);
-		GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+		if (ShipPosition.X > -6660.0f)
+		{
+			// Add to the X axis...
+			ShipPosition.X -= Speed*DeltaTime;
+			ShipTransform.SetLocation(ShipPosition);
+			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+		}
+		else {
+			ShipPosition.X = -6660.0f;
+			ShipTransform.SetLocation(ShipPosition);
+			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+		}
 		return;
 	}
 }
