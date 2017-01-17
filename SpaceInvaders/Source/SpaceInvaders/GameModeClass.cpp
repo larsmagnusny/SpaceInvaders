@@ -26,7 +26,8 @@ void AGameModeClass::BeginPlay()
 			FTransform t = FTransform();
 			t.SetLocation(FVector(StartX - (900.0f*i), StartY, 0.f));
 			t.SetScale3D(FVector(5.f, 5.f, 5.f));
-			AlienArray.Add(World->SpawnActor<AAlienShipPreset>(AAlienShipPreset::StaticClass(), t));
+			AAlienShipPreset* AlienShip = World->SpawnActor<AAlienShipPreset>(AAlienShipPreset::StaticClass(), t);
+			AlienArray.Add(AlienShip);
 		}
 
 		for (int32 i = 1; i < 3; ++i)
@@ -57,5 +58,46 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 {
 	Super::TickActor( DeltaTime, TickType, ThisTickFunction );
 
-	
+	// Let's check if the actors have been deleted?
+	for (AActor* Ent : AlienArray)
+	{
+		if (Ent->IsA<AAlienShipPreset>())
+		{
+			AAlienShipPreset* AlienP = (AAlienShipPreset*)Ent;
+
+			if (AlienP->needDelete)
+			{
+				AlienArray.Remove(Ent);
+				AlienP->Destroy();
+				UE_LOG(LogTemp, Warning, TEXT("Ship has been destroyed!"));
+			}
+		}
+		if (Ent->IsA<AAlienShip_Second>())
+		{
+			AAlienShip_Second* AlienP = (AAlienShip_Second*)Ent;
+
+			if (AlienP->needDelete)
+			{
+				AlienArray.Remove(Ent);
+				AlienP->Destroy();
+				UE_LOG(LogTemp, Warning, TEXT("Ship has been destroyed!"));
+			}
+		}
+		if (Ent->IsA<AAlienShip_Third>())
+		{
+			AAlienShip_Third* AlienP = (AAlienShip_Third*)Ent;
+
+			if (AlienP->needDelete)
+			{
+				AlienArray.Remove(Ent);
+				AlienP->Destroy();
+				UE_LOG(LogTemp, Warning, TEXT("Ship has been destroyed!"));
+			}
+		}
+	}
+}
+
+void AGameModeClass::RemoveActor(AActor* ActorToDelete)
+{
+	AlienArray.Remove(ActorToDelete);
 }

@@ -2,6 +2,7 @@
 
 #include "SpaceInvaders.h"
 #include "Bullet.h"
+#include "GameModeClass.h"
 
 ABullet::ABullet()
 {

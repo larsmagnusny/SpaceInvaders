@@ -26,4 +26,6 @@ public:
 	void SetPosition(const FVector Location);
 
 	FVector GetPosition();
+
+	bool needDelete = false;
 };

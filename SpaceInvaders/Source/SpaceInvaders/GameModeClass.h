@@ -18,5 +18,7 @@ public:
 	virtual void TickActor(float DeltaTime, ELevelTick TickType, FActorTickFunction& ThisTickFunction) override;
 	virtual void BeginPlay() override;
 
+	void RemoveActor(AActor* ActorToDelete);
+
 	TArray<AActor*> AlienArray;
 };
