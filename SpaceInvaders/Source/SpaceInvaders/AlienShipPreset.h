@@ -36,6 +36,17 @@ public:
 	UMaterial* MeshMaterial2;
 	UMaterial* MeshMaterial3;
 
+	int32 GetValue()
+	{
+		return PointValue;
+	}
+
+	void SetValue(int32 n)
+	{
+		PointValue = n;
+	}
+
 private:
 	int32 MeshNum = 0;
+	int32 PointValue = 0;
 };

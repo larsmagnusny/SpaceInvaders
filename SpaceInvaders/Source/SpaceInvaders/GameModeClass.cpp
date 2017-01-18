@@ -2,6 +2,7 @@
 
 #include "SpaceInvaders.h"
 #include "GameModeClass.h"
+#include "SpaceInvadersHUD.h"
 
 AGameModeClass::AGameModeClass()
 {
@@ -13,6 +14,8 @@ AGameModeClass::AGameModeClass()
 	{
 		DefaultPawnClass = (UClass*)Blueprint.Object->GeneratedClass;
 	}
+
+	HUDClass = ASpaceInvadersHUD::StaticClass();
 }
 
 void AGameModeClass::BeginPlay()
