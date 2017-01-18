@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "SpaceShipController.h"
 #include "Engine/StaticMeshActor.h"
 #include "Bullet.generated.h"
 
@@ -29,9 +30,22 @@ public:
 	UFUNCTION()
 	void OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor);
 
+	void SetParent(USpaceShipController* Parent)
+	{
+		SpaceShip = Parent;
+	}
+
+	void SetVelocity(float S)
+	{
+		Speed = S;
+	}
+
 	
 private:
-	float Speed = 8000.0f;	// 1000 cm/s
+	float Speed = 12000.0f;	// 1000 cm/s
 	float AliveTime = 0.f;	// Should delete itself when its done / misses...
 	float MaxAliveTime = 2.0f;
+
+	USpaceShipController* SpaceShip = nullptr;
+	ASpaceInvadersHUD* ourHUD;
 };

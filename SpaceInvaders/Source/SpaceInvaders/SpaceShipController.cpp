@@ -11,17 +11,6 @@ USpaceShipController::USpaceShipController()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	//UStaticMeshComponent* StaticMeshComp = (UStaticMeshComponent*)GetOwner()->GetComponentByClass(UStaticMeshComponent::StaticClass());
-	//StaticMeshComp->bGenerateOverlapEvents = true;
-	//StaticMeshComp->SetNotifyRigidBodyCollision(true);
-	//StaticMeshComp->Mobility = EComponentMobility::Movable;
-
-	//StaticMeshComp->SetCollisionProfileName(FName("OverlapAll"));
-	//StaticMeshComp->MoveIgnoreActors.Add(GetOwner());
-
-	//GetOwner()->OnActorBeginOverlap.AddDynamic(this, &USpaceShipController::OnOverlapBegin);
-	//GetOwner()->OnActorBeginOverlap.
 }
 
 
@@ -51,9 +40,13 @@ void USpaceShipController::BeginPlay()
 	}
 }
 
+void USpaceShipController::InitHUD()
+{
+	ourHUD = Cast<ASpaceInvadersHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+}
+
 void USpaceShipController::MoveLeft()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Should be moving Left"));
 	MovingLeft = true;
 }
 
@@ -64,7 +57,6 @@ void USpaceShipController::StopMoveLeft()
 
 void USpaceShipController::MoveRight()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Should be moving Right"));
 	MovingRight = true;
 }
 
@@ -75,15 +67,26 @@ void USpaceShipController::StopMoveRight()
 
 void USpaceShipController::Fire()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Should be moving Firing"));
+	if (FireCooldown)
+		return;
 
 	FVector ourLocation = GetOwner()->GetActorLocation();
 
 	FTransform t = FTransform();
 	t.SetLocation(ourLocation + FVector(0.f, 500.f, 0));
-	t.SetScale3D(FVector(10.f, 10.f, 10.f));
+	t.SetScale3D(FVector(16.f, 16.f, 16.f));
 	t.SetRotation(FQuat::MakeFromEuler(FVector(0.0f, 0.0f, -90.f)));
-	GetWorld()->SpawnActor<ABullet>(ABullet::StaticClass(), t);
+
+	auto MyDeferredActor = Cast<ABullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, ABullet::StaticClass(), t));
+
+	if (MyDeferredActor)
+	{
+		MyDeferredActor->SetParent(this);
+
+		UGameplayStatics::FinishSpawningActor(MyDeferredActor, t);
+	}
+
+	FireCooldown = true;
 }
 
 // Called every frame
@@ -91,52 +94,117 @@ void USpaceShipController::TickComponent( float DeltaTime, ELevelTick TickType, 
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
+	Rotation = GetOwner()->GetActorRotation();
+
+	if (FireCooldown)
+	{
+		ShotTimer += DeltaTime;
+
+		if (ShotTimer >= TimePerShot)
+		{
+			FireCooldown = false;
+			ShotTimer = 0.f;
+		}
+	}
+
 	if (MovingLeft && MovingRight)
 	{
 		// Do nothing here, because the movements cancel eachother out...
 		return;
 	}
 
-	if (MovingLeft) {
-		FTransform ShipTransform = GetOwner()->GetTransform();
-		FVector ShipPosition = ShipTransform.GetLocation();
+	if (!MovingLeft && !MovingRight)
+	{
+		if (Speed > 0.f)
+			Speed -= Acceleration*DeltaTime*0.5;
+		if (Speed < 0.f)
+			Speed += Acceleration*DeltaTime*0.5;
 
-		if (ShipPosition.X < 10000.0f) {
-			// Add to the X axis...
-			ShipPosition.X += Speed*DeltaTime;
-			ShipTransform.SetLocation(ShipPosition);
-			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+		if (Rotation.Pitch > 0.f)
+			Rotation.Add(-RollSpeed*DeltaTime*0.6, 0.f, 0.f);
+		if (Rotation.Pitch < 0.f)
+			Rotation.Add(RollSpeed*DeltaTime*0.6, 0.f, 0.f);
+	}
+	else {
+		if (Speed < 0.f && MovingLeft)
+			Speed += Acceleration*DeltaTime;
+		if (Speed > 0.f && MovingRight)
+			Speed -= Acceleration*DeltaTime;
+
+		if (Rotation.Pitch > 0.f && MovingLeft)
+			Rotation.Add(-RollSpeed*DeltaTime, 0.f, 0.f);
+		if (Rotation.Pitch < 0.f && MovingRight)
+			Rotation.Add(RollSpeed*DeltaTime, 0.f, 0.f);
+	}
+
+	if (MovingLeft) {
+		Speed += Acceleration*DeltaTime;
+		if (Rotation.Pitch > -MaxRoll) {
+			Rotation.Add(-RollSpeed*DeltaTime, 0.f, 0.f);
 		}
 		else {
-			ShipPosition.X = 10000.0f;
-			ShipTransform.SetLocation(ShipPosition);
-			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+			Rotation = FRotator(-MaxRoll, 0.f, 0.f);
 		}
-		return;
 	}
 
 	if (MovingRight)
 	{
-		FTransform ShipTransform = GetOwner()->GetTransform();
-		FVector ShipPosition = ShipTransform.GetLocation();
-
-		if (ShipPosition.X > -10000.0f)
-		{
-			// Add to the X axis...
-			ShipPosition.X -= Speed*DeltaTime;
-			ShipTransform.SetLocation(ShipPosition);
-			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+		Speed -= Acceleration*DeltaTime;
+		if (Rotation.Pitch < MaxRoll) {
+			Rotation.Add(RollSpeed*DeltaTime, 0.f, 0.f);
 		}
 		else {
-			ShipPosition.X = -10000.0f;
-			ShipTransform.SetLocation(ShipPosition);
-			GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+			Rotation = FRotator(MaxRoll , 0.f, 0.f);
 		}
-		return;
+	}
+
+	FTransform ShipTransform = GetOwner()->GetTransform();
+	FVector ShipPosition = ShipTransform.GetLocation();
+
+	if (ShipPosition.X > -10000.0f && ShipPosition.X < 10000.0f)
+	{
+		// Add to the X axis...
+		if (Speed > TopSpeed)
+			Speed = TopSpeed;
+		if (Speed < -TopSpeed)
+			Speed = -TopSpeed;
+
+		ShipPosition.X += Speed*DeltaTime;
+		ShipTransform.SetLocation(ShipPosition);
+		GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+		GetOwner()->SetActorRotation(Rotation);
+	}
+	else {
+		Speed = 0.f;
+
+		if (ShipPosition.X < -10000.f)
+			ShipPosition.X = -9999.f;
+		if (ShipPosition.X > 10000.f)
+			ShipPosition.X = 9999.f;
+
+		ShipTransform.SetLocation(ShipPosition);
+		GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
+		GetOwner()->SetActorRotation(Rotation);
 	}
 }
 
 void USpaceShipController::OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Something is hitting me!?"));
+	OtherActor->Destroy();
+	if (!ourHUD) {
+		InitHUD();
+	}
+	int32 ourLives = ourHUD->GetLives();
+
+	if (ourLives > 0) {
+		--ourLives;
+		ourHUD->SetLives(ourLives);
+	}
+	else
+	{
+		// We should be dead now!
+		UE_LOG(LogTemp, Error, TEXT("You should be dead now, but the programmer is lazy!"));
+	}
+
+	
 }

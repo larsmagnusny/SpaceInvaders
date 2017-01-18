@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "SpaceInvadersHUD.h"
 #include "Components/ActorComponent.h"
 #include "SpaceShipController.generated.h"
 
@@ -27,13 +28,27 @@ public:
 	void StopMoveRight();
 	void Fire();
 	void Die();
+	void InitHUD();
 
 	UFUNCTION()
 	void OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor);
 
+	FRotator Rotation;
+
 private:
+	ASpaceInvadersHUD* ourHUD = nullptr;
+
 	bool MovingLeft = false;
 	bool MovingRight = false;
 
-	float Speed = 5000.f;
+	bool FireCooldown = false;
+	float ShotTimer = 0.f;
+	float TimePerShot = 1.f;
+
+	float Speed = 0.f;
+	float TopSpeed = 8000.f;
+	float Acceleration = 25000.f;
+
+	float RollSpeed = 120.f;
+	float MaxRoll = 45.f;
 };

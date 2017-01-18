@@ -21,7 +21,7 @@ public:
 
 	void RemoveActor(AAlienShipPreset* ActorToDelete);
 
-	void SpawnActor(int32 Type, FTransform t);
+	void SpawnActor(int32 Type, int32 Points, FTransform t);
 
 	void MoveAllActors(FVector ToPos);
 

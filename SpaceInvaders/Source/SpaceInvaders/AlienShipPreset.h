@@ -22,6 +22,10 @@ public:
 
 	void SetPosition(const FVector Location);
 
+	const FHitResult GetFirstShipInReach();
+
+	void Fire();
+
 	FVector GetPosition();
 
 	void SetMeshNum(int32 n);

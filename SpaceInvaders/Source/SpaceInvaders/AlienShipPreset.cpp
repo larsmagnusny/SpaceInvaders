@@ -2,6 +2,7 @@
 
 #include "SpaceInvaders.h"
 #include "AlienShipPreset.h"
+#include "Bullet.h"
 
 
 // Sets default values
@@ -23,13 +24,33 @@ AAlienShipPreset::AAlienShipPreset()
 	MeshMaterial1 = Material1.Object;
 	MeshMaterial2 = Material2.Object;
 	MeshMaterial3 = Material3.Object;
+
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 // Called when the game starts or when spawned
 void AAlienShipPreset::BeginPlay()
 {
 	Super::BeginPlay();
-	
+}
+
+void AAlienShipPreset::Fire()
+{
+	FVector ourLocation = GetActorLocation();
+
+	FTransform t = FTransform();
+	t.SetLocation(ourLocation + FVector(0.f, -1000.f, 0));
+	t.SetScale3D(FVector(16.f, 16.f, 16.f));
+	t.SetRotation(FQuat::MakeFromEuler(FVector(0.0f, 0.0f, 90.f)));
+
+	auto MyDeferredActor = Cast<ABullet>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, ABullet::StaticClass(), t));
+
+	if (MyDeferredActor)
+	{
+		MyDeferredActor->SetVelocity(-6000.f);
+
+		UGameplayStatics::FinishSpawningActor(MyDeferredActor, t);
+	}
 }
 
 // Called every frame
@@ -37,6 +58,13 @@ void AAlienShipPreset::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+	if (FMath::RandRange(0.f, 10000.f) >= 9990)
+	{
+		FHitResult Hit = GetFirstShipInReach();
+
+		if(!Hit.GetActor())
+			Fire();
+	}
 }
 
 void AAlienShipPreset::SetPosition(const FVector Location)
@@ -73,9 +101,24 @@ void AAlienShipPreset::SetMeshNum(int32 n)
 	}
 
 	// Set the collision parameters...
+	StaticMeshComp->SetCollisionProfileName(FName("Destructible"));		// So that other ships can raytrace to check if they should fire or not...
 	StaticMeshComp->bGenerateOverlapEvents = true;
 	StaticMeshComp->SetNotifyRigidBodyCollision(true);
-	
+}
 
-	UE_LOG(LogTemp, Warning, TEXT("ID: %i"), n);
+const FHitResult AAlienShipPreset::GetFirstShipInReach()
+{
+	FCollisionQueryParams QueryParams = FCollisionQueryParams(FName(TEXT("")), false, this);
+
+	// Line-trace out to reach distance
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByObjectType(
+		Hit,
+		GetActorLocation(),
+		GetActorLocation() + FVector(0.f, -10000.f, 0),
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_Destructible),
+		QueryParams
+	);
+
+	return Hit;
 }

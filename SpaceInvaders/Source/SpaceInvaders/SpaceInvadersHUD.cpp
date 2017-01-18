@@ -12,8 +12,6 @@ ASpaceInvadersHUD::ASpaceInvadersHUD()
 
 	if (FontObject.Object)
 		MyFont = FontObject.Object;
-	
-	//MainGameMode = (AGameModeClass*)GetWorld()->GetAuthGameMode();
 }
 
 void ASpaceInvadersHUD::DrawText(UFont* TheFont, const FString& TheString, const float& X, const float& Y, const FLinearColor& TheColor, const float& TheScale,
@@ -43,6 +41,20 @@ void ASpaceInvadersHUD::DrawText(UFont* TheFont, const FString& TheString, const
 
 void ASpaceInvadersHUD::DrawHUD()
 {
-	DrawText(MyFont, FString("This is just a test"), 100, 100, FLinearColor(1.f, 1.f, 1.f, 1.f), 1.f, false);
+	Super::DrawHUD();
+	const FVector2D ViewportSize = FVector2D(GEngine->GameViewport->Viewport->GetSizeXY());
+	FVector2D MadeFor = FVector2D(1065.f, 596.f);
+
+	float scaleFactorX = ViewportSize.X / 1065;
+	float scaleFactorY = ViewportSize.Y / 596.f;
+
+	DrawText(MyFont, FString("SCORE"), 390 * scaleFactorX, 20 * scaleFactorY, FLinearColor(1.f, 1.f, 1.f, 0.7f), 2.5f, false);
+	DrawText(MyFont, FString::FromInt(Score), 450 * scaleFactorX, 70 * scaleFactorY, FLinearColor(1.f, 1.f, 1.f, 0.7f), 2.5f, false);
+
+	DrawText(MyFont, FString("HIGHSCORE"), 690 * scaleFactorX, 20 * scaleFactorY, FLinearColor(1.f, 1.f, 1.f, 0.7f), 2.5f, false);
+	DrawText(MyFont, FString::FromInt(HighScore), 800 * scaleFactorX, 70 * scaleFactorY, FLinearColor(1.f, 1.f, 1.f, 0.7f), 2.5f, false);
+
+	DrawText(MyFont, FString("Lives"), 150 * scaleFactorX, 20 * scaleFactorY, FLinearColor(1.f, 1.f, 1.f, 0.7f), 2.5f, false);
+	DrawText(MyFont, FString::FromInt(Lives), 150 * scaleFactorX, 70 * scaleFactorY, FLinearColor(1.f, 1.f, 1.f, 0.7f), 2.5f, false);
 }
 

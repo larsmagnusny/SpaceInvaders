@@ -32,6 +32,7 @@ void ABullet::BeginPlay()
 {
 	Super::BeginPlay();
 
+	ourHUD = Cast<ASpaceInvadersHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 }
 
 // Called every frame
@@ -49,7 +50,6 @@ void ABullet::Tick(float DeltaTime)
 	}
 	else {
 		K2_DestroyActor();
-		UE_LOG(LogTemp, Warning, TEXT("Bullet has been destroyed..."));
 	}
 }
 
@@ -68,17 +68,27 @@ void ABullet::OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor)
 {
 	FString OverLappingActor = OtherActor->GetName();
 
-	UE_LOG(LogTemp, Warning, TEXT("Im Overlapping: %s"), *OverLappingActor);
-
 	if (OtherActor && MyOverlappedActor)
 	{
 		AAlienShipPreset* test = (AAlienShipPreset*)OtherActor;
-		
-		if (test)
-		{
-			test->needDelete = true;
-		}
 
-		MyOverlappedActor->Destroy(false, false);
+
+		if (test->IsA(AAlienShipPreset::StaticClass()))
+		{
+			if (ourHUD && test)
+			{
+				int32 CurPoints = ourHUD->GetScore();
+
+				ourHUD->SetScore(CurPoints + test->GetValue());
+			}
+			else {
+				UE_LOG(LogTemp, Error, TEXT("Sorry! Can't find the HUD Class?!"));
+			}
+
+			if (test)
+				test->needDelete = true;
+
+			MyOverlappedActor->Destroy(false, false);
+		}
 	}
 }

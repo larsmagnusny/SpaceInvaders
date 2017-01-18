@@ -22,16 +22,21 @@ void AGameModeClass::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//GetWorld()->GetFirstPlayerController()->ClientSetHUD(HUDClass);
+
 	SpawnAllShips();
+
+	// Tell the playercontroller the HUD has changed...
 }
 
-void AGameModeClass::SpawnActor(int32 Type, FTransform t)
+void AGameModeClass::SpawnActor(int32 Type, int32 Points, FTransform t)
 {
 	auto MyDeferredActor = Cast<AAlienShipPreset>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, AAlienShipPreset::StaticClass(), t));
 
 	if (MyDeferredActor)
 	{
 		MyDeferredActor->SetMeshNum(Type);
+		MyDeferredActor->SetValue(Points);
 
 		UGameplayStatics::FinishSpawningActor(MyDeferredActor, t);
 		AlienArray.Add(MyDeferredActor);
@@ -154,39 +159,37 @@ void AGameModeClass::SpawnAllShips()
 {
 	UWorld* const World = GetWorld();
 
-	float StartX = 6800.0f;
+	float StartX = 7200.0f;
 	float StartY = 11000.0f;
 
 	if (World)
 	{
-		for (int32 i = 0; i < 16; ++i) {
+		for (int32 i = 0; i < 12; ++i) {
 			FTransform t = FTransform();
-			t.SetLocation(FVector(StartX - (900.0f*i), StartY, 0.f));
-			t.SetScale3D(FVector(5.f, 5.f, 5.f));
-			//AAlienShipPreset* AlienShip = World->SpawnActor<AAlienShipPreset>(AAlienShipPreset::StaticClass(), t);
-			//AlienArray.Add(AlienShip);
-			SpawnActor(0, t);
+			t.SetLocation(FVector(StartX - (1300.f*i), StartY, 0.f));
+			t.SetScale3D(FVector(8.f, 8.f, 8.f));
+			SpawnActor(0, 30, t);
 		}
 
 		for (int32 i = 1; i < 3; ++i)
 		{
-			for (int32 j = 0; j < 16; ++j) {
+			for (int32 j = 0; j < 12; ++j) {
 				FTransform t = FTransform();
-				t.SetLocation(FVector(StartX - (900.0f*j), StartY - (1000.0*i), 0.f));
-				t.SetScale3D(FVector(9.f, 9.f, 9.f));
+				t.SetLocation(FVector(StartX - (1300.f*j), StartY - (1300.f*i), 0.f));
+				t.SetScale3D(FVector(13.f, 13.f, 13.f));
 				t.SetRotation(FQuat::MakeFromEuler(FVector(0.0f, 0.0f, 90.0f)));
-				SpawnActor(1, t);
+				SpawnActor(1, 20, t);
 			}
 		}
 
 		for (int32 i = 3; i < 5; ++i)
 		{
-			for (int32 j = 0; j < 16; ++j) {
+			for (int32 j = 0; j < 12; ++j) {
 				FTransform t = FTransform();
-				t.SetLocation(FVector(StartX - (900.0f*j), StartY - (1000.0*i), 0.f));
-				t.SetScale3D(FVector(10.f, 10.f, 10.f));
+				t.SetLocation(FVector(StartX - (1300.f*j), StartY - (1300.f*i), 0.f));
+				t.SetScale3D(FVector(15.f, 15.f, 15.f));
 				t.SetRotation(FQuat::MakeFromEuler(FVector(0.0f, 0.0f, 90.0f)));
-				SpawnActor(2, t);
+				SpawnActor(2, 10, t);
 			}
 		}
 	}
