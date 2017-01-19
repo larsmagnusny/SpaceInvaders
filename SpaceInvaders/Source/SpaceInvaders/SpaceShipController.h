@@ -3,6 +3,7 @@
 #pragma once
 
 #include "SpaceInvadersHUD.h"
+#include "GameModeClass.h"
 #include "Components/ActorComponent.h"
 #include "SpaceShipController.generated.h"
 
@@ -28,6 +29,7 @@ public:
 	void StopMoveRight();
 	void Fire();
 	void Die();
+	void RestartGame();
 	void InitHUD();
 
 	UFUNCTION()
@@ -37,13 +39,16 @@ public:
 
 private:
 	ASpaceInvadersHUD* ourHUD = nullptr;
+	AGameModeClass* ourGameMode = nullptr;
+
+	USoundWave* FireSound = nullptr;
 
 	bool MovingLeft = false;
 	bool MovingRight = false;
 
 	bool FireCooldown = false;
 	float ShotTimer = 0.f;
-	float TimePerShot = 1.f;
+	float TimePerShot = 0.7f;
 
 	float Speed = 0.f;
 	float TopSpeed = 8000.f;

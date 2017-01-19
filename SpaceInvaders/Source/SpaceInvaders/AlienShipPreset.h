@@ -13,6 +13,7 @@ class SPACEINVADERS_API AAlienShipPreset : public AStaticMeshActor
 public:	
 	// Sets default values for this actor's properties
 	AAlienShipPreset();
+	~AAlienShipPreset();
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -37,8 +38,13 @@ public:
 	UStaticMesh* Mesh3;
 
 	UMaterial* MeshMaterial1;
+	UMaterial* MeshMaterial1_2;
 	UMaterial* MeshMaterial2;
+	UMaterial* MeshMaterial2_2;
 	UMaterial* MeshMaterial3;
+	UMaterial* MeshMaterial3_2;
+
+	USoundWave* DieSound;
 
 	int32 GetValue()
 	{

@@ -2,7 +2,6 @@
 
 #include "SpaceInvaders.h"
 #include "GameModeClass.h"
-#include "SpaceInvadersHUD.h"
 
 AGameModeClass::AGameModeClass()
 {
@@ -16,17 +15,30 @@ AGameModeClass::AGameModeClass()
 	}
 
 	HUDClass = ASpaceInvadersHUD::StaticClass();
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> AlienDieSndWave(TEXT("SoundWave'/Game/Sounds/invaderkilled.invaderkilled'"));
+	AlienDieSound = AlienDieSndWave.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> AlienMoveSndWave1(TEXT("SoundWave'/Game/Sounds/fastinvader1.fastinvader1'"));
+	AlienMoveSound1 = AlienMoveSndWave1.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> AlienMoveSndWave2(TEXT("SoundWave'/Game/Sounds/fastinvader2.fastinvader2'"));
+	AlienMoveSound2 = AlienMoveSndWave2.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> AlienMoveSndWave3(TEXT("SoundWave'/Game/Sounds/fastinvader3.fastinvader3'"));
+	AlienMoveSound3 = AlienMoveSndWave3.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> AlienMoveSndWave4(TEXT("SoundWave'/Game/Sounds/fastinvader4.fastinvader4'"));
+	AlienMoveSound4 = AlienMoveSndWave4.Object;
 }
 
 void AGameModeClass::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//GetWorld()->GetFirstPlayerController()->ClientSetHUD(HUDClass);
-
 	SpawnAllShips();
 
-	// Tell the playercontroller the HUD has changed...
+	ourHUD = Cast<ASpaceInvadersHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 }
 
 void AGameModeClass::SpawnActor(int32 Type, int32 Points, FTransform t)
@@ -47,16 +59,19 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 {
 	Super::TickActor( DeltaTime, TickType, ThisTickFunction );
 
+	if (ourHUD->GameOver)
+		return;
+
 	if (AlienArray.Num() == 0)
 	{
-		GameOver = true;
+		NextLevel = true;
 	}
 
-	if (GameOver)
+	if (NextLevel)
 	{
 		DestroyAllShips();
 		SpawnAllShips();
-		GameOver = false;
+		NextLevel = false;
 		SecondsPerStep = 1.0f;
 		StepCounter = 0.f;
 		TotalSteps = 0;
@@ -68,48 +83,51 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 	{
 		if (Alien->needDelete)
 		{
+			UGameplayStatics::PlaySound2D(GetWorld(), AlienDieSound, 1.f, 1.f, 0.f, nullptr);
 			RemoveActor(Alien);
 			Alien->Destroy();
-			return;
+			break;
 		}
 	}
 
 	if (StepCounter >= SecondsPerStep)
 	{
+		AAlienShipPreset* LeftAlien = GetMostLeftAlien();
+		AAlienShipPreset* RightAlien = GetMostRightAlien();
+		if (!LeftAlien)
+			return;
+		if (!RightAlien)
+			return;
+
 		TotalSteps++;
 		StepCounter = 0.f;
 
 		//UE_LOG(LogTemp, Warning, TEXT("STEP: %s"), *FString::SanitizeFloat(SecondsPerStep));
-		if (SecondsPerStep > 0.15)
-		{
-			SecondsPerStep -= 0.005f;
-		}
-		else {
-			SecondsPerStep = 0.15;
-		}
+		SecondsPerStep = 1.f - (1.f / (0.1*AlienArray.Num() + 1.f));
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *FString::SanitizeFloat(SecondsPerStep));
 
 		if (Direction)
 		{
-			if (Steps > 0) {
-				Steps--;
+			PlayRandomMoveSound();
+			float CurX = LeftAlien->GetActorLocation().X;
+			if (CurX + 500.f < 10000.f) {
 				MoveAllActors(FVector(500.f, 0.f, 0.f));
 			}
 			else {
-					DownSteps--;
 					MoveAllActors(FVector(0.f, -500.f, 0.f));
-					Steps = 12;
 					Direction = false;
 			}
 		}
 		else {
-			if (Steps > 0)
+			PlayRandomMoveSound();
+			float CurX = RightAlien->GetActorLocation().X;
+
+			if (CurX + 500.f > -10000.f)
 			{
-				Steps--;
 				MoveAllActors(FVector(-500.f, 0.f, 0.f));
 			}
 			else {
 					MoveAllActors(FVector(0.f, -500.f, 0.f));
-					Steps = 12;
 					Direction = true;
 			}
 		}
@@ -140,7 +158,7 @@ void AGameModeClass::MoveAllActors(FVector Step)
 		{
 			// Trigger Game Over...
 			UE_LOG(LogTemp, Warning, TEXT("Should trigger GameOver here!"));
-			GameOver = true;
+			ourHUD->SetGameOver(true);
 		}
 	}
 }
@@ -193,4 +211,83 @@ void AGameModeClass::SpawnAllShips()
 			}
 		}
 	}
+}
+
+void AGameModeClass::RestartGame()
+{
+	DestroyAllShips();
+	SpawnAllShips();
+	NextLevel = false;
+	ourHUD->SetGameOver(false);
+	ourHUD->SetScore(0);
+	ourHUD->SetLives(2);
+	SecondsPerStep = 1.0f;
+	StepCounter = 0.f;
+	TotalSteps = 0;
+	Steps = 6;
+	Direction = true;
+}
+
+AAlienShipPreset* AGameModeClass::GetMostLeftAlien()
+{
+	// Highest X value
+	float MaxX = -INT_MAX;
+	float CurX = 0.f;
+
+	AAlienShipPreset* MostLeftAlien = nullptr;
+
+	for (AAlienShipPreset* Alien : AlienArray)
+	{
+		if (Alien)
+		{
+			CurX = Alien->GetActorLocation().X;
+
+			if (CurX > MaxX)
+			{
+				MaxX = CurX;
+				MostLeftAlien = Alien;
+			}
+		}
+	}
+
+	return MostLeftAlien;
+}
+
+AAlienShipPreset* AGameModeClass::GetMostRightAlien()
+{
+	// Lowest X value
+	float MinX = INT_MAX;
+	float CurX = 0.f;
+
+	AAlienShipPreset* MostRightAlien = nullptr;
+
+	for (AAlienShipPreset* Alien : AlienArray)
+	{
+		if (Alien)
+		{
+			CurX = Alien->GetActorLocation().X;
+
+			if (CurX < MinX)
+			{
+				MinX = CurX;
+				MostRightAlien = Alien;
+			}
+		}
+	}
+
+	return MostRightAlien;
+}
+
+void AGameModeClass::PlayRandomMoveSound()
+{
+	float Random = FMath::RandRange(0.f, 1000.f);
+
+	if(Random <= 250)
+		UGameplayStatics::PlaySound2D(GetWorld(), AlienMoveSound1, 1.f, 1.f, 0.f, nullptr);
+	if(Random > 250 && Random <= 500)
+		UGameplayStatics::PlaySound2D(GetWorld(), AlienMoveSound2, 1.f, 1.f, 0.f, nullptr);
+	if(Random > 500 && Random <= 750)
+		UGameplayStatics::PlaySound2D(GetWorld(), AlienMoveSound3, 1.f, 1.f, 0.f, nullptr);
+	if(Random > 750 && Random <= 1000)
+		UGameplayStatics::PlaySound2D(GetWorld(), AlienMoveSound1, 1.f, 1.f, 0.f, nullptr);
 }

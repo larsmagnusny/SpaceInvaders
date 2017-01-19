@@ -11,6 +11,10 @@ USpaceShipController::USpaceShipController()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+
+	// Load sounds the object will use...
+	static ConstructorHelpers::FObjectFinder<USoundWave> FireSndWave(TEXT("SoundWave'/Game/Sounds/shoot.shoot'"));
+	FireSound = FireSndWave.Object;
 }
 
 
@@ -18,6 +22,8 @@ USpaceShipController::USpaceShipController()
 void USpaceShipController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	ourGameMode = Cast<AGameModeClass>(GetWorld()->GetAuthGameMode());
 
 	// Set up Collisions
 	GetOwner()->OnActorBeginOverlap.AddDynamic(this, &USpaceShipController::OnOverlapBegin);
@@ -37,7 +43,19 @@ void USpaceShipController::BeginPlay()
 		InputComponent->BindAction(FName("Right"), IE_Released, this, &USpaceShipController::StopMoveRight);
 
 		InputComponent->BindAction(FName("Fire"), IE_Pressed, this, &USpaceShipController::Fire);
+		InputComponent->BindAction(FName("NewGame"), IE_Pressed, this, &USpaceShipController::RestartGame);
 	}
+}
+
+void USpaceShipController::RestartGame()
+{
+	if (!ourHUD)
+		return;
+	if (!ourGameMode)
+		return;
+
+	if (ourHUD->GetGameOver())
+		ourGameMode->RestartGame();
 }
 
 void USpaceShipController::InitHUD()
@@ -69,6 +87,10 @@ void USpaceShipController::Fire()
 {
 	if (FireCooldown)
 		return;
+
+	//UGameplayStatics::PlaySound2D(GetWorld(), USoundBase())
+
+	UGameplayStatics::PlaySound2D(GetWorld(), FireSound, 1.f, 1.f, 0.f, nullptr);
 
 	FVector ourLocation = GetOwner()->GetActorLocation();
 
@@ -203,8 +225,7 @@ void USpaceShipController::OnOverlapBegin(AActor* MyOverlappedActor, AActor* Oth
 	else
 	{
 		// We should be dead now!
-		UE_LOG(LogTemp, Error, TEXT("You should be dead now, but the programmer is lazy!"));
+		ourHUD->SetGameOver(true);
+		ourHUD->SetHighScore(ourHUD->GetScore());
 	}
-
-	
 }

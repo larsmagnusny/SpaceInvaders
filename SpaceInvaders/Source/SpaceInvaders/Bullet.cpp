@@ -7,8 +7,8 @@
 
 ABullet::ABullet()
 {
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh(TEXT("StaticMesh'/Game/Bullet'"));
-	static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("MaterialInstanceConstant'/Game/lambert1'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh(TEXT("StaticMesh'/Game/Bullet.Bullet'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("Material'/Game/Bullet_Mat.Bullet_Mat'"));
 
 	UStaticMeshComponent* StaticMeshComp = GetStaticMeshComponent();
 

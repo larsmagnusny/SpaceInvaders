@@ -3,6 +3,7 @@
 #pragma once
 
 #include "AlienShipPreset.h"
+#include "SpaceInvadersHUD.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameModeClass.generated.h"
 
@@ -28,7 +29,15 @@ public:
 	void DestroyAllShips();
 	void SpawnAllShips();
 
+	void RestartGame();
+
+	void PlayRandomMoveSound();
+
+	AAlienShipPreset* GetMostLeftAlien();
+	AAlienShipPreset* GetMostRightAlien();
+
 	TArray<AAlienShipPreset*> AlienArray;
+	ASpaceInvadersHUD* ourHUD = nullptr;
 
 private:
 	float StepCounter = 0.0f;
@@ -38,5 +47,12 @@ private:
 	int32 TotalSteps = 0;
 	int32 DownSteps = 10;
 
-	bool GameOver = false;
+	USoundWave* AlienDieSound;
+
+	USoundWave* AlienMoveSound1;
+	USoundWave* AlienMoveSound2;
+	USoundWave* AlienMoveSound3;
+	USoundWave* AlienMoveSound4;
+
+	bool NextLevel = false;
 };
