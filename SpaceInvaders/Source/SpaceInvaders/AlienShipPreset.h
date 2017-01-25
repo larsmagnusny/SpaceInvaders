@@ -33,9 +33,12 @@ public:
 
 	bool needDelete = false;
 
+	bool DeathByPlayer = true;
+
 	UStaticMesh* Mesh1;
 	UStaticMesh* Mesh2;
 	UStaticMesh* Mesh3;
+	UStaticMesh* Mesh4;
 
 	UMaterial* MeshMaterial1;
 	UMaterial* MeshMaterial1_2;
@@ -43,8 +46,12 @@ public:
 	UMaterial* MeshMaterial2_2;
 	UMaterial* MeshMaterial3;
 	UMaterial* MeshMaterial3_2;
+	UMaterial* MeshMaterial4;
 
 	USoundWave* DieSound;
+	USoundWave* MysterySound;
+
+	UAudioComponent* MysteryPlayer;
 
 	int32 GetValue()
 	{
@@ -70,4 +77,8 @@ private:
 	int32 MeshNum = 0;
 	int32 PointValue = 0;
 	bool canCheckRayCast = false;
+	bool isMysteryShip = false;
+	float Velocity = 1000.f;
+	float AliveTime = 7.f;
+	float timeAlive = 0.f;
 };

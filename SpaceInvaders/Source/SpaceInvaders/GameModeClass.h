@@ -33,10 +33,17 @@ public:
 
 	void PlayRandomMoveSound();
 
+	void CreateExplosionParticleEffect(FTransform t);
+
+	void SetRequirement();
+
+	void SpawnMysteryShip();
+
 	AAlienShipPreset* GetMostLeftAlien();
 	AAlienShipPreset* GetMostRightAlien();
 
 	TArray<AAlienShipPreset*> AlienArray;
+	TArray<AAlienShipPreset*> MysteryArray;
 	ASpaceInvadersHUD* ourHUD = nullptr;
 
 private:
@@ -46,6 +53,9 @@ private:
 	int32 Steps = 6;
 	int32 TotalSteps = 0;
 	int32 DownSteps = 10;
+	int32 RequiredPoints = 1000;
+	int32 LastLevelScore = 0;
+
 
 	USoundWave* AlienDieSound;
 
@@ -55,4 +65,5 @@ private:
 	USoundWave* AlienMoveSound4;
 
 	bool NextLevel = false;
+	bool bonusRecieved = false;
 };

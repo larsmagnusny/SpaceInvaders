@@ -20,11 +20,17 @@ AAlienShipPreset::AAlienShipPreset()
 	static ConstructorHelpers::FObjectFinder<UMaterial> Material3(TEXT("Material'/Game/SpaceShip3_Body.SpaceShip3_Body'"));
 	static ConstructorHelpers::FObjectFinder<UMaterial> Material3_2(TEXT("Material'/Game/SpaceShip3_Ring.SpaceShip3_Ring'"));
 
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh4(TEXT("StaticMesh'/Game/MysteryShip.MysteryShip'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material4(TEXT("Material'/Game/Mystery_Body.Mystery_Body'"));
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> Myst(TEXT("SoundWave'/Game/Sounds/ufo_lowpitch.ufo_lowpitch'"));
+
 	
 
 	Mesh1 = StaticMesh1.Object;
 	Mesh2 = StaticMesh2.Object;
 	Mesh3 = StaticMesh3.Object;
+	Mesh4 = StaticMesh4.Object;
 
 	MeshMaterial1 = Material1.Object;
 	MeshMaterial1_2 = Material1_2.Object;
@@ -32,6 +38,9 @@ AAlienShipPreset::AAlienShipPreset()
 	MeshMaterial2_2 = Material2_2.Object;
 	MeshMaterial3 = Material3.Object;
 	MeshMaterial3_2 = Material3_2.Object;
+	MeshMaterial4 = Material4.Object;
+
+	MysterySound = Myst.Object;
 
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -71,17 +80,36 @@ void AAlienShipPreset::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
-	if (FMath::RandRange(0.f, 10000.f) >= 9000 && canCheckRayCast)
+	if (!isMysteryShip)
 	{
-		FHitResult Hit = GetFirstShipInReach();
+		if (FMath::RandRange(0.f, 10000.f) >= 8500 && canCheckRayCast)
+		{
+			FHitResult Hit = GetFirstShipInReach();
 
-		if(!Hit.GetActor())
-			Fire();
+			if (!Hit.GetActor())
+				Fire();
 
-		canCheckRayCast = false;
+			canCheckRayCast = false;
+		}
+		else {
+			canCheckRayCast = false;
+		}
 	}
 	else {
-		canCheckRayCast = false;
+		// We should tick for a while then destroy ourselves...
+		if (timeAlive > AliveTime)
+		{
+			needDelete = true;
+			DeathByPlayer = false;
+		}
+
+		FVector position = GetActorLocation();
+
+		position.X += Velocity*DeltaTime;
+
+		SetActorLocation(position);
+
+		timeAlive += DeltaTime;
 	}
 }
 
@@ -125,6 +153,32 @@ void AAlienShipPreset::SetMeshNum(int32 n)
 	StaticMeshComp->SetCollisionProfileName(FName("Destructible"));		// So that other ships can raytrace to check if they should fire or not...
 	StaticMeshComp->bGenerateOverlapEvents = true;
 	StaticMeshComp->SetNotifyRigidBodyCollision(true);
+
+	if (n == 3)
+	{
+		StaticMeshComp->SetStaticMesh(Mesh4);
+		StaticMeshComp->SetMaterial(0, MeshMaterial4);
+
+		isMysteryShip = true;
+
+		Velocity = 3000.0f;
+
+		MysteryPlayer = ConstructObject<UAudioComponent>(UAudioComponent::StaticClass(), this);
+
+		MysteryPlayer->OnComponentCreated();
+		MysteryPlayer->RegisterComponent();
+
+		if (MysteryPlayer->bWantsInitializeComponent)
+		{
+			MysteryPlayer->InitializeComponent();
+		}
+
+		MysteryPlayer->Sound = MysterySound;
+
+		MysteryPlayer->bAutoActivate = true;
+	}
+
+	
 }
 
 const FHitResult AAlienShipPreset::GetFirstShipInReach()

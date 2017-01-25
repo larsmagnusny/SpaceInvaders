@@ -2,6 +2,8 @@
 
 #include "SpaceInvaders.h"
 #include "GameModeClass.h"
+#include "Explosion.h"
+#include "DateTime.h"
 
 AGameModeClass::AGameModeClass()
 {
@@ -39,6 +41,14 @@ void AGameModeClass::BeginPlay()
 	SpawnAllShips();
 
 	ourHUD = Cast<ASpaceInvadersHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+
+	FDateTime Now = FDateTime::Now();
+
+	int64 time = Now.ToUnixTimestamp();
+
+	UE_LOG(LogTemp, Error, TEXT("Time: %s"), *FString::FromInt(time));
+
+	FMath::SRandInit(time);
 }
 
 void AGameModeClass::SpawnActor(int32 Type, int32 Points, FTransform t)
@@ -79,13 +89,37 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 		Direction = true;
 	}
 
+	float randSpawn = FMath::RandRange(0, 100000);
+
+	if (randSpawn > 99990)
+	{
+		SpawnMysteryShip();
+	}
+
 	for (AAlienShipPreset* Alien : AlienArray)
 	{
 		if (Alien->needDelete)
 		{
 			UGameplayStatics::PlaySound2D(GetWorld(), AlienDieSound, 1.f, 1.f, 0.f, nullptr);
+			CreateExplosionParticleEffect(Alien->GetActorTransform());
 			RemoveActor(Alien);
 			Alien->Destroy();
+			break;
+		}
+	}
+
+	for (AAlienShipPreset* MShip : MysteryArray)
+	{
+		if (MShip->needDelete)
+		{
+			if (MShip->DeathByPlayer)
+			{
+				UGameplayStatics::PlaySound2D(GetWorld(), AlienDieSound, 1.f, 1.f, 0.f, nullptr);
+				FTransform ft = MShip->GetActorTransform();
+				CreateExplosionParticleEffect(ft);
+			}
+			MysteryArray.Remove(MShip);
+			MShip->Destroy();
 			break;
 		}
 	}
@@ -101,10 +135,9 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 
 		TotalSteps++;
 		StepCounter = 0.f;
-
 		//UE_LOG(LogTemp, Warning, TEXT("STEP: %s"), *FString::SanitizeFloat(SecondsPerStep));
 		SecondsPerStep = 1.f - (1.f / (0.1*AlienArray.Num() + 1.f));
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *FString::SanitizeFloat(SecondsPerStep));
+		//UE_LOG(LogTemp, Warning, TEXT("%s"), *FString::SanitizeFloat(SecondsPerStep));
 
 		if (Direction)
 		{
@@ -133,7 +166,84 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 		}
 	}
 
+	if ((ourHUD->GetScore() - LastLevelScore) > RequiredPoints && !bonusRecieved)
+	{
+		ourHUD->SetLives(ourHUD->GetLives() + 1);
+		LastLevelScore = ourHUD->GetScore();
+		SetRequirement();
+	}
+
 	StepCounter += DeltaTime;
+}
+
+void AGameModeClass::SetRequirement()
+{
+	int rand = FMath::RandRange(0.0f, 10.0f);
+
+	if (rand > 5)
+	{
+		// 1500 points for new life
+		RequiredPoints = 1500;
+	}
+	else if (rand < 5)
+	{
+		// 1000 points for new life
+		RequiredPoints = 1000;
+	}
+}
+
+void AGameModeClass::CreateExplosionParticleEffect(FTransform t)
+{
+	t.SetScale3D(FVector(0.4f, 0.4f, 0.4f));
+	auto MyDeferredActor = Cast<AExplosion>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, AExplosion::StaticClass(), t));
+
+	if (MyDeferredActor)
+	{
+		UGameplayStatics::FinishSpawningActor(MyDeferredActor, t);
+	}
+}
+
+void AGameModeClass::SpawnMysteryShip()
+{
+	FTransform t = FTransform();
+	t.SetScale3D(FVector(4.f, 4.f, 4.f));
+
+	t.SetLocation(FVector(-10000.f, 11500.f, 0.f));
+
+	auto MyDeferredActor = Cast<AAlienShipPreset>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, AAlienShipPreset::StaticClass(), t));
+
+	// Randomly select between three things...
+
+	float rand = FMath::RandRange(0, 100);
+
+	int PointValue = 0;
+
+	if (rand < 25 && rand >= 0)
+	{
+		PointValue = 50;
+	}
+	else if (rand >= 25 && rand < 50)
+	{
+		PointValue = 100;
+	}
+	else if (rand >= 50 && rand < 75)
+	{
+		PointValue = 150;
+	}
+	else if (rand >= 75 && rand <= 100)
+	{
+		PointValue = 300;
+	}
+
+
+	if (MyDeferredActor)
+	{
+		MyDeferredActor->SetMeshNum(3);
+		MyDeferredActor->SetValue(PointValue);
+
+		UGameplayStatics::FinishSpawningActor(MyDeferredActor, t);
+		MysteryArray.Add(MyDeferredActor);
+	}
 }
 
 void AGameModeClass::RemoveActor(AAlienShipPreset* ActorToDelete)
@@ -176,7 +286,13 @@ void AGameModeClass::DestroyAllShips()
 		Alien->Destroy();
 	}
 
+	for (AAlienShipPreset* MShip : MysteryArray)
+	{
+		MShip->Destroy();
+	}
+
 	AlienArray.Empty();
+	MysteryArray.Empty();
 }
 
 void AGameModeClass::SpawnAllShips()
@@ -232,6 +348,9 @@ void AGameModeClass::RestartGame()
 	TotalSteps = 0;
 	Steps = 6;
 	Direction = true;
+	
+	SetRequirement();
+	
 }
 
 AAlienShipPreset* AGameModeClass::GetMostLeftAlien()

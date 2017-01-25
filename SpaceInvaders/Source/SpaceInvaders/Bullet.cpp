@@ -73,7 +73,7 @@ void ABullet::OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor)
 		AAlienShipPreset* test = (AAlienShipPreset*)OtherActor;
 
 
-		if (test->IsA(AAlienShipPreset::StaticClass()))
+		if (OtherActor->IsA(AAlienShipPreset::StaticClass()))
 		{
 			if (ourHUD && test)
 			{
@@ -89,6 +89,18 @@ void ABullet::OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor)
 				test->needDelete = true;
 
 			MyOverlappedActor->Destroy(false, false);
+		}
+		else if (OtherActor->IsA(AActor::StaticClass()) || OtherActor->IsA(ABullet::StaticClass()))
+		{
+			if (!OtherActor->GetName().Equals("SpaceShip_2"))
+			{
+				UE_LOG(LogTemp, Error, TEXT("%s"), *OtherActor->GetName());
+				MyOverlappedActor->Destroy();
+				OtherActor->Destroy();
+			}
+			else {
+				MyOverlappedActor->Destroy();
+			}
 		}
 	}
 }
