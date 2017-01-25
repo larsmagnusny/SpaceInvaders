@@ -154,12 +154,18 @@ void AGameModeClass::MoveAllActors(FVector Step)
 	{
 		FVector Location = Alien->GetActorLocation() + Step;
 		Alien->SetActorLocation(Location);
+		
 		if (Location.Y < 0)
 		{
 			// Trigger Game Over...
 			UE_LOG(LogTemp, Warning, TEXT("Should trigger GameOver here!"));
 			ourHUD->SetGameOver(true);
 		}
+	}
+
+	for (AAlienShipPreset* Alien : AlienArray)
+	{
+		Alien->SetCanCheckRayCast(true);
 	}
 }
 
@@ -186,7 +192,7 @@ void AGameModeClass::SpawnAllShips()
 			FTransform t = FTransform();
 			t.SetLocation(FVector(StartX - (1300.f*i), StartY, 0.f));
 			t.SetScale3D(FVector(8.f, 8.f, 8.f));
-			SpawnActor(0, 30, t);
+			SpawnActor(0, 40, t);
 		}
 
 		for (int32 i = 1; i < 3; ++i)

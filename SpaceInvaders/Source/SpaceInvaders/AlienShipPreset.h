@@ -56,7 +56,18 @@ public:
 		PointValue = n;
 	}
 
+	void SetCanCheckRayCast(bool checkRayCast)
+	{
+		canCheckRayCast = checkRayCast;
+	}
+
+	bool GetCanCheckRayCast()
+	{
+		return canCheckRayCast;
+	}
+
 private:
 	int32 MeshNum = 0;
 	int32 PointValue = 0;
+	bool canCheckRayCast = false;
 };

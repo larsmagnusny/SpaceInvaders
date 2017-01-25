@@ -71,12 +71,17 @@ void AAlienShipPreset::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
-	if (FMath::RandRange(0.f, 10000.f) >= 9990)
+	if (FMath::RandRange(0.f, 10000.f) >= 9000 && canCheckRayCast)
 	{
 		FHitResult Hit = GetFirstShipInReach();
 
 		if(!Hit.GetActor())
 			Fire();
+
+		canCheckRayCast = false;
+	}
+	else {
+		canCheckRayCast = false;
 	}
 }
 

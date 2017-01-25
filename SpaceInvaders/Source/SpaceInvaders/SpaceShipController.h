@@ -48,7 +48,7 @@ private:
 
 	bool FireCooldown = false;
 	float ShotTimer = 0.f;
-	float TimePerShot = 0.7f;
+	float TimePerShot = 0.5f;
 
 	float Speed = 0.f;
 	float TopSpeed = 8000.f;
