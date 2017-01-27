@@ -106,12 +106,16 @@ public:
 
 	UClass* MainHUDWidgetTemplate;
 	UUserWidget* MainHUDWidget;
+
 	UClass* MainMenuHUDWidgetTemplate;
 	UUserWidget* MainMenuHUDWidget;
+
 	UClass* GameOverHUDWidgetTemplate;
 	UUserWidget* GameOverHUDWidget;
+
 	UClass* PauseMenuHUDWidgetTemplate;
 	UUserWidget* PauseMenuHUDWidget;
+
 	UClass* HighscoreHUDWidgetTemplate;
 	UUserWidget* HighscoreHUDWidget;
 private:
