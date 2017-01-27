@@ -15,6 +15,11 @@ ASpaceInvadersHUD::ASpaceInvadersHUD()
 	FStringClassReference HighscoreMenuHUDWidgetRef(TEXT("/Game/HighScore.HighScore_C"));
 	HighscoreHUDWidgetTemplate = HighscoreMenuHUDWidgetRef.TryLoadClass<UUserWidget>();
 
+	FStringClassReference PauseMenuHUDWidgetRef(TEXT("/Game/PauseMenu.PauseMenu_C"));
+	PauseMenuHUDWidgetTemplate = PauseMenuHUDWidgetRef.TryLoadClass<UUserWidget>();
+
+	FStringClassReference GameOverHUDWidgetRef(TEXT("/Game/GameOver.GameOver_C"));
+	GameOverHUDWidgetTemplate = GameOverHUDWidgetRef.TryLoadClass<UUserWidget>();
 }
 
 void ASpaceInvadersHUD::BeginPlay()
@@ -24,6 +29,8 @@ void ASpaceInvadersHUD::BeginPlay()
 	LoadMainMenu();
 	LoadHighscoreMenu();
 	LoadInGameHUD();
+	LoadPauseMenu();
+	LoadGameOver();
 
 	MyController = GetWorld()->GetFirstPlayerController();
 
@@ -39,6 +46,22 @@ void ASpaceInvadersHUD::LoadMainMenu()
 	if (MainMenuHUDWidgetTemplate)
 	{
 		MainMenuHUDWidget = CreateWidget<UUserWidget>(GetWorld()->GetFirstPlayerController(), MainMenuHUDWidgetTemplate);
+	}
+}
+
+void ASpaceInvadersHUD::LoadGameOver()
+{
+	if (GameOverHUDWidgetTemplate)
+	{
+		GameOverHUDWidget = CreateWidget<UUserWidget>(GetWorld()->GetFirstPlayerController(), GameOverHUDWidgetTemplate);
+	}
+}
+
+void ASpaceInvadersHUD::LoadPauseMenu()
+{
+	if (PauseMenuHUDWidgetTemplate)
+	{
+		PauseMenuHUDWidget = CreateWidget<UUserWidget>(GetWorld()->GetFirstPlayerController(), PauseMenuHUDWidgetTemplate);
 	}
 }
 
@@ -96,7 +119,39 @@ void ASpaceInvadersHUD::DrawHUD()
 		if (!MyController->bEnableMouseOverEvents)
 			MyController->bEnableMouseOverEvents = true;
 	}
-	else {
+	else if (!MainMenu && PauseMenu) 
+	{
+		if (MainHUDWidget->GetIsVisible())
+			MainHUDWidget->RemoveFromViewport();
+		if (!PauseMenuHUDWidget->GetIsVisible())
+			PauseMenuHUDWidget->AddToViewport();
+
+		if (!MyController->bShowMouseCursor)
+			MyController->bShowMouseCursor = true;
+		if (!MyController->bEnableClickEvents)
+			MyController->bEnableClickEvents = true;
+		if (!MyController->bEnableMouseOverEvents)
+			MyController->bEnableMouseOverEvents = true;
+	}
+	else if (!MainMenu && GameOver)
+	{
+		if (MainHUDWidget->GetIsVisible())
+			MainHUDWidget->RemoveFromViewport();
+		if (!GameOverHUDWidget->GetIsVisible())
+			GameOverHUDWidget->AddToViewport();
+
+		if (!MyController->bShowMouseCursor)
+			MyController->bShowMouseCursor = true;
+		if (!MyController->bEnableClickEvents)
+			MyController->bEnableClickEvents = true;
+		if (!MyController->bEnableMouseOverEvents)
+			MyController->bEnableMouseOverEvents = true;
+	}
+	else
+	{
+		if (PauseMenuHUDWidget->GetIsVisible())
+			PauseMenuHUDWidget->RemoveFromViewport();
+
 		if(MainMenuHUDWidget->GetIsVisible())
 			MainMenuHUDWidget->RemoveFromViewport();
 

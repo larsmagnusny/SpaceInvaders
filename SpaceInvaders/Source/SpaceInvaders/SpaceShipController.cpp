@@ -48,6 +48,8 @@ void USpaceShipController::BeginPlay()
 
 		InputComponent->BindAction(FName("Fire"), IE_Pressed, this, &USpaceShipController::Fire);
 		InputComponent->BindAction(FName("NewGame"), IE_Pressed, this, &USpaceShipController::RestartGame);
+
+		InputComponent->BindAction(FName("PauseMenu"), IE_Pressed, this, &USpaceShipController::PauseGame);
 	}
 }
 
@@ -119,6 +121,15 @@ void USpaceShipController::Fire()
 void USpaceShipController::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
+
+	if (!ourHUD)
+	{
+		InitHUD();
+		return;
+	}
+
+	if (ourHUD->GameOver || ourHUD->GetMainMenu() || ourHUD->GetHighScoreMenu() || ourHUD->GetPauseMenu())
+		return;
 
 	Rotation = GetOwner()->GetActorRotation();
 
@@ -282,5 +293,19 @@ void USpaceShipController::CreateExplosionParticleEffect(FTransform t)
 	if (MyDeferredActor)
 	{
 		UGameplayStatics::FinishSpawningActor(MyDeferredActor, t);
+	}
+}
+
+void USpaceShipController::PauseGame()
+{
+	if (!ourHUD)
+	{
+		InitHUD();
+	}
+
+	if (ourHUD)
+	{
+		if (!ourHUD->GetMainMenu())
+			ourHUD->SetPauseMenu(!ourHUD->GetPauseMenu());
 	}
 }

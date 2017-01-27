@@ -31,6 +31,7 @@ public:
 	void Die();
 	void RestartGame();
 	void InitHUD();
+	void PauseGame();
 
 	void CreateExplosionParticleEffect(FTransform t);
 

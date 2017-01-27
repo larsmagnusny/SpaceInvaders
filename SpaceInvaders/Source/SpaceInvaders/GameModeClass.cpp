@@ -66,7 +66,7 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 {
 	Super::TickActor( DeltaTime, TickType, ThisTickFunction );
 
-	if (ourHUD->GameOver || ourHUD->GetMainMenu() || ourHUD->GetHighScoreMenu())
+	if (ourHUD->GameOver || ourHUD->GetMainMenu() || ourHUD->GetHighScoreMenu() || ourHUD->GetPauseMenu())
 		return;
 
 	if (AlienArray.Num() == 0)

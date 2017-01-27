@@ -21,12 +21,15 @@ public:
 	void LoadInGameHUD();
 	void LoadMainMenu();
 	void LoadHighscoreMenu();
+	void LoadPauseMenu();
+	void LoadGameOver();
 
 	void SetScore(int32 n) 
 	{
 		Score = n; 
 	}
 
+	UFUNCTION(BlueprintCallable, Category = "Menu")
 	int32 GetScore() 
 	{
 		return Score; 
@@ -81,6 +84,11 @@ public:
 	void SetPauseMenu(bool val)
 	{
 		PauseMenu = val;
+	}
+
+	bool GetPauseMenu()
+	{
+		return PauseMenu;
 	}
 
 	bool GetMainMenu()
