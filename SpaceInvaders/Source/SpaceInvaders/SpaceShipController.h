@@ -32,6 +32,8 @@ public:
 	void RestartGame();
 	void InitHUD();
 
+	void CreateExplosionParticleEffect(FTransform t);
+
 	UFUNCTION()
 	void OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor);
 
@@ -42,6 +44,7 @@ private:
 	AGameModeClass* ourGameMode = nullptr;
 
 	USoundWave* FireSound = nullptr;
+	USoundWave* DieSound = nullptr;
 
 	bool MovingLeft = false;
 	bool MovingRight = false;
@@ -56,4 +59,12 @@ private:
 
 	float RollSpeed = 120.f;
 	float MaxRoll = 45.f;
+
+	bool IsBlinking = false;
+	bool visible = true;
+	float InvisTime = 0.2f;	// How long will the ship be invisible
+	float timeBlink = 0.0f;
+	float VisTime = 0.2f;
+	int32 numBlinks = 10;
+	int32 blinkCounter = 0;
 };

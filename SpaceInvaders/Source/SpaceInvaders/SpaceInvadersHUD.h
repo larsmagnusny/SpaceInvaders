@@ -2,6 +2,7 @@
 
 #pragma once
 #include "GameFramework/HUD.h"
+#include "Blueprint/UserWidget.h"
 #include "SpaceInvadersHUD.generated.h"
 
 /**
@@ -14,45 +15,100 @@ class SPACEINVADERS_API ASpaceInvadersHUD : public AHUD
 public:
 	ASpaceInvadersHUD();
 
+	virtual void BeginPlay() override;
 	virtual void DrawHUD() override;
 
-	void DrawText(UFont* TheFont, const FString& TheString, const float& X, const float& Y, const FLinearColor& TheColor, const float& TheScale,
-				  bool DrawOutline = false, const FLinearColor OutlineColor = FLinearColor(0, 0, 0, 1));
-	void DrawLine(
-		const FVector2D& Start,
-		const FVector2D& End,
-		const FLinearColor& TheColor,
-		const float& Thick
-	);
+	void LoadInGameHUD();
+	void LoadMainMenu();
+	void LoadHighscoreMenu();
 
-	void DrawRect(
-		float X, float Y,
-		float Width, float Height,
-		const FLinearColor& Color
-	);
+	void SetScore(int32 n) 
+	{
+		Score = n; 
+	}
 
+	int32 GetScore() 
+	{
+		return Score; 
+	}
 
-	UFont* MyFont;
+	void SetHighScore(int32 n)
+	{
+		HighScore = n; 
+	}
 
-	void SetScore(int32 n) { Score = n; }
+	int32 GetHighScore()
+	{ 
+		return HighScore; 
+	}
 
-	int32 GetScore() { return Score; }
+	int32 GetLives()
+	{
+		return Lives; 
+	}
 
-	void SetHighScore(int32 n) { HighScore = n; }
-	int32 GetHighScore() { return HighScore; }
+	void SetLives(int32 n) 
+	{ 
+		Lives = n;
+	}
 
-	int32 GetLives() { return Lives; }
+	void SetGameOver(bool Boolean) {
+		GameOver = Boolean; 
+	}
 
-	void SetLives(int32 n) { Lives = n; }
+	bool GetGameOver() {
+		return GameOver; 
+	}
 
-	void SetGameOver(bool Boolean) { GameOver = Boolean; }
-	bool GetGameOver() { return GameOver; }
+	UFUNCTION(BlueprintCallable, Category = "Menu")
+	void SetMainMenu(bool val)
+	{
+		MainMenu = val;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Menu")
+	void SetHighScoreMenu(bool val)
+	{
+		HighscoreMenu = val;
+	}
+
+	bool GetHighScoreMenu()
+	{
+		return HighscoreMenu;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Menu")
+	void SetPauseMenu(bool val)
+	{
+		PauseMenu = val;
+	}
+
+	bool GetMainMenu()
+	{
+		return MainMenu;
+	}
 
 	int32 Score = 0;
 	int32 HighScore = 0;
 	int32 Lives = 2;
-
 	bool GameOver = false;
+	bool MainMenu = true;
+	bool HighscoreMenu = false;
+	bool PauseMenu = false;
 
+	UClass* MainHUDWidgetTemplate;
+	UUserWidget* MainHUDWidget;
+	UClass* MainMenuHUDWidgetTemplate;
+	UUserWidget* MainMenuHUDWidget;
+	UClass* GameOverHUDWidgetTemplate;
+	UUserWidget* GameOverHUDWidget;
+	UClass* PauseMenuHUDWidgetTemplate;
+	UUserWidget* PauseMenuHUDWidget;
+	UClass* HighscoreHUDWidgetTemplate;
+	UUserWidget* HighscoreHUDWidget;
 private:
+	UTextBlock* ScoreWidget = nullptr;
+	UTextBlock* HighscoreWidget = nullptr;
+	UTextBlock* LivesWidget = nullptr;
+	APlayerController* MyController;
 };

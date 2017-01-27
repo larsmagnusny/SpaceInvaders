@@ -9,7 +9,7 @@ AExplosion::AExplosion()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleSystem(TEXT("ParticleSystem'/Game/Explosion.Explosion'"));
+	ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleSystem(TEXT("ParticleSystem'/Game/Particle/Explosion.Explosion'"));
 
 	ExplosionParticleEmitter = CreateDefaultSubobject<UParticleSystemComponent>(FName("Explosion_Effect"));
 
@@ -20,6 +20,8 @@ AExplosion::AExplosion()
 
 	ExplosionParticleEmitter->bAutoActivate = false;
 	ExplosionParticleEmitter->SetHiddenInGame(false);
+
+	RootComponent = ExplosionParticleEmitter;
 }
 
 // Called when the game starts or when spawned

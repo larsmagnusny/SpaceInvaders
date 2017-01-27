@@ -8,20 +8,20 @@
 // Sets default values
 AAlienShipPreset::AAlienShipPreset()
 {
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh1(TEXT("StaticMesh'/Game/SpaceShip1.SpaceShip1'"));
-	static ConstructorHelpers::FObjectFinder<UMaterial> Material1(TEXT("Material'/Game/SpaceShip1_Body.SpaceShip1_Body'"));
-	static ConstructorHelpers::FObjectFinder<UMaterial> Material1_2(TEXT("Material'/Game/SpaceShip1_Window.SpaceShip1_Window'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh1(TEXT("StaticMesh'/Game/Models/SpaceShip1.SpaceShip1'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material1(TEXT("Material'/Game/Materials/SpaceShip1_Body.SpaceShip1_Body'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material1_2(TEXT("Material'/Game/Materials/SpaceShip1_Window.SpaceShip1_Window'"));
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh2(TEXT("StaticMesh'/Game/SpaceShip2.SpaceShip2'"));
-	static ConstructorHelpers::FObjectFinder<UMaterial> Material2(TEXT("Material'/Game/SpaceShip2_Body.SpaceShip2_Body'"));
-	static ConstructorHelpers::FObjectFinder<UMaterial> Material2_2(TEXT("Material'/Game/SpaceShip2_Window.SpaceShip2_Window'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh2(TEXT("StaticMesh'/Game/Models/SpaceShip2.SpaceShip2'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material2(TEXT("Material'/Game/Materials/SpaceShip2_Body.SpaceShip2_Body'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material2_2(TEXT("Material'/Game/Materials/SpaceShip2_Window.SpaceShip2_Window'"));
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh3(TEXT("StaticMesh'/Game/SpaceShip3.SpaceShip3'"));
-	static ConstructorHelpers::FObjectFinder<UMaterial> Material3(TEXT("Material'/Game/SpaceShip3_Body.SpaceShip3_Body'"));
-	static ConstructorHelpers::FObjectFinder<UMaterial> Material3_2(TEXT("Material'/Game/SpaceShip3_Ring.SpaceShip3_Ring'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh3(TEXT("StaticMesh'/Game/Models/SpaceShip3.SpaceShip3'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material3(TEXT("Material'/Game/Materials/SpaceShip3_Body.SpaceShip3_Body'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material3_2(TEXT("Material'/Game/Materials/SpaceShip3_Ring.SpaceShip3_Ring'"));
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh4(TEXT("StaticMesh'/Game/MysteryShip.MysteryShip'"));
-	static ConstructorHelpers::FObjectFinder<UMaterial> Material4(TEXT("Material'/Game/Mystery_Body.Mystery_Body'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh4(TEXT("StaticMesh'/Game/Models/MysteryShip.MysteryShip'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> Material4(TEXT("Material'/Game/Materials/Mystery_Body.Mystery_Body'"));
 
 	static ConstructorHelpers::FObjectFinder<USoundWave> Myst(TEXT("SoundWave'/Game/Sounds/ufo_lowpitch.ufo_lowpitch'"));
 
@@ -163,7 +163,7 @@ void AAlienShipPreset::SetMeshNum(int32 n)
 
 		Velocity = 3000.0f;
 
-		MysteryPlayer = ConstructObject<UAudioComponent>(UAudioComponent::StaticClass(), this);
+		MysteryPlayer = NewObject<UAudioComponent>(this, FName("MysterySoundPlayer"));
 
 		MysteryPlayer->OnComponentCreated();
 		MysteryPlayer->RegisterComponent();

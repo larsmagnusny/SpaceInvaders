@@ -3,6 +3,7 @@
 #include "SpaceInvaders.h"
 #include "SpaceShipController.h"
 #include "Bullet.h"
+#include "Explosion.h"
 
 
 // Sets default values for this component's properties
@@ -15,6 +16,9 @@ USpaceShipController::USpaceShipController()
 	// Load sounds the object will use...
 	static ConstructorHelpers::FObjectFinder<USoundWave> FireSndWave(TEXT("SoundWave'/Game/Sounds/shoot.shoot'"));
 	FireSound = FireSndWave.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> DieS(TEXT("SoundWave'/Game/Sounds/explosion.explosion'"));
+	DieSound = DieS.Object;
 }
 
 
@@ -208,10 +212,45 @@ void USpaceShipController::TickComponent( float DeltaTime, ELevelTick TickType, 
 		GetOwner()->SetActorTransform(ShipTransform, false, nullptr, ETeleportType::None);
 		GetOwner()->SetActorRotation(Rotation);
 	}
+
+	if (IsBlinking && blinkCounter < numBlinks)
+	{
+		if (timeBlink < InvisTime && visible)
+		{
+			timeBlink += DeltaTime;
+		}
+		else if(timeBlink > InvisTime && visible) {
+			timeBlink = 0.0f;
+			GetOwner()->SetActorHiddenInGame(false);
+			visible = false;
+			blinkCounter++;
+		}
+
+		if (timeBlink < VisTime && !visible)
+		{
+			timeBlink += DeltaTime;
+		}
+		else if (timeBlink > VisTime && !visible)
+		{
+			timeBlink = 0.0f;
+			GetOwner()->SetActorHiddenInGame(true);
+			visible = true;
+			blinkCounter++;
+		}
+	}
+	else if (blinkCounter >= numBlinks)
+	{
+		IsBlinking = false;
+		blinkCounter = 0;
+		GetOwner()->SetActorHiddenInGame(false);
+	}
 }
 
 void USpaceShipController::OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor)
 {
+	if (IsBlinking)
+		return;
+
 	OtherActor->Destroy();
 	if (!ourHUD) {
 		InitHUD();
@@ -221,11 +260,27 @@ void USpaceShipController::OnOverlapBegin(AActor* MyOverlappedActor, AActor* Oth
 	if (ourLives > 0) {
 		--ourLives;
 		ourHUD->SetLives(ourLives);
+		IsBlinking = true;
+		GetOwner()->SetActorHiddenInGame(true);
+		CreateExplosionParticleEffect(GetOwner()->GetActorTransform());
+		UGameplayStatics::PlaySound2D(GetWorld(), DieSound, 1.0f);
 	}
 	else
 	{
 		// We should be dead now!
+		UGameplayStatics::PlaySound2D(GetWorld(), DieSound, 1.0f);
 		ourHUD->SetGameOver(true);
 		ourHUD->SetHighScore(ourHUD->GetScore());
+	}
+}
+
+void USpaceShipController::CreateExplosionParticleEffect(FTransform t)
+{
+	t.SetScale3D(FVector(0.4f, 0.4f, 0.4f));
+	auto MyDeferredActor = Cast<AExplosion>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, AExplosion::StaticClass(), t));
+
+	if (MyDeferredActor)
+	{
+		UGameplayStatics::FinishSpawningActor(MyDeferredActor, t);
 	}
 }

@@ -10,11 +10,8 @@ AGameModeClass::AGameModeClass()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Initialize Blueprint Pawn...
-	static ConstructorHelpers::FObjectFinder<UBlueprint> Blueprint(TEXT("Blueprint'/Game/DefaultPawn_Blueprint.DefaultPawn_Blueprint'"));
-	if (Blueprint.Object)
-	{
-		DefaultPawnClass = (UClass*)Blueprint.Object->GeneratedClass;
-	}
+
+	DefaultPawnClass = nullptr;	// Not using a default pawn this gamemode...
 
 	HUDClass = ASpaceInvadersHUD::StaticClass();
 
@@ -69,7 +66,7 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 {
 	Super::TickActor( DeltaTime, TickType, ThisTickFunction );
 
-	if (ourHUD->GameOver)
+	if (ourHUD->GameOver || ourHUD->GetMainMenu() || ourHUD->GetHighScoreMenu())
 		return;
 
 	if (AlienArray.Num() == 0)
