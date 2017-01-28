@@ -47,21 +47,9 @@ void USpaceShipController::BeginPlay()
 		InputComponent->BindAction(FName("Right"), IE_Released, this, &USpaceShipController::StopMoveRight);
 
 		InputComponent->BindAction(FName("Fire"), IE_Pressed, this, &USpaceShipController::Fire);
-		InputComponent->BindAction(FName("NewGame"), IE_Pressed, this, &USpaceShipController::RestartGame);
 
 		InputComponent->BindAction(FName("PauseMenu"), IE_Pressed, this, &USpaceShipController::PauseGame);
 	}
-}
-
-void USpaceShipController::RestartGame()
-{
-	if (!ourHUD)
-		return;
-	if (!ourGameMode)
-		return;
-
-	if (ourHUD->GetGameOver())
-		ourGameMode->RestartGame();
 }
 
 void USpaceShipController::InitHUD()

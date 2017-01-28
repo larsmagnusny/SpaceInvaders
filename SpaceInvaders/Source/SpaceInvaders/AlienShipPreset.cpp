@@ -8,6 +8,7 @@
 // Sets default values
 AAlienShipPreset::AAlienShipPreset()
 {
+	// Her så laster vi inn alle mesher, materialer og lyder vi kanskje kommer til å bruke på alle AlienShips
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMesh1(TEXT("StaticMesh'/Game/Models/SpaceShip1.SpaceShip1'"));
 	static ConstructorHelpers::FObjectFinder<UMaterial> Material1(TEXT("Material'/Game/Materials/SpaceShip1_Body.SpaceShip1_Body'"));
 	static ConstructorHelpers::FObjectFinder<UMaterial> Material1_2(TEXT("Material'/Game/Materials/SpaceShip1_Window.SpaceShip1_Window'"));
@@ -25,8 +26,7 @@ AAlienShipPreset::AAlienShipPreset()
 
 	static ConstructorHelpers::FObjectFinder<USoundWave> Myst(TEXT("SoundWave'/Game/Sounds/ufo_lowpitch.ufo_lowpitch'"));
 
-	
-
+	// Sett pekerne til adressen til de objektene vi har lastet inn
 	Mesh1 = StaticMesh1.Object;
 	Mesh2 = StaticMesh2.Object;
 	Mesh3 = StaticMesh3.Object;
@@ -42,6 +42,7 @@ AAlienShipPreset::AAlienShipPreset()
 
 	MysterySound = Myst.Object;
 
+	// Vi bruker Tick som kalles hver frame
 	PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -58,6 +59,7 @@ void AAlienShipPreset::BeginPlay()
 
 void AAlienShipPreset::Fire()
 {
+	// Hent vår posisjon, deretter spawn en kule og sett farten til -6000 cm / s
 	FVector ourLocation = GetActorLocation();
 
 	FTransform t = FTransform();
@@ -80,19 +82,21 @@ void AAlienShipPreset::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+	// Hvis vi ikke er et mystery skip
 	if (!isMysteryShip)
 	{
+		// Finn et tilfeldig tall og sjekk om vi faktisk kan skyte uten å ødelegge våre egne skip
 		if (FMath::RandRange(0.f, 10000.f) >= 8500 && canCheckRayCast)
 		{
-			FHitResult Hit = GetFirstShipInReach();
+			FHitResult Hit = GetFirstShipInReach(); // RayCast ( Line-Trace )
 
-			if (!Hit.GetActor())
+			if (!Hit.GetActor())	// Skyt hvis vi ikke traff noe
 				Fire();
 
-			canCheckRayCast = false;
+			canCheckRayCast = false; // Brukes for å synke Tick i GameModeClass
 		}
 		else {
-			canCheckRayCast = false;
+			canCheckRayCast = false; // Brukes for å synke Tick i GameModeClass
 		}
 	}
 	else {
@@ -103,6 +107,7 @@ void AAlienShipPreset::Tick( float DeltaTime )
 			DeathByPlayer = false;
 		}
 
+		// Beveg oss hver frame mot høyre fra venstre
 		FVector position = GetActorLocation();
 
 		position.X += Velocity*DeltaTime;
@@ -125,16 +130,19 @@ FVector AAlienShipPreset::GetPosition()
 
 void AAlienShipPreset::SetMeshNum(int32 n)
 {
-	
-
+	// Setter Mesh basert på n
 	UStaticMeshComponent* StaticMeshComp = GetStaticMeshComponent();
 	StaticMeshComp->Mobility = EComponentMobility::Movable;
+
+	// Bakerste skip type
 	if (n == 0)
 	{
 		StaticMeshComp->SetStaticMesh(Mesh1);
 		StaticMeshComp->SetMaterial(0, MeshMaterial1);
 		StaticMeshComp->SetMaterial(1, MeshMaterial1_2);
 	}
+
+	// Skip type 2
 	if (n == 1)
 	{
 		StaticMeshComp->SetStaticMesh(Mesh2);
@@ -142,6 +150,7 @@ void AAlienShipPreset::SetMeshNum(int32 n)
 		StaticMeshComp->SetMaterial(1, MeshMaterial2_2);
 	}
 
+	// Skip type 3
 	if (n == 2)
 	{
 		StaticMeshComp->SetStaticMesh(Mesh3);
@@ -154,6 +163,7 @@ void AAlienShipPreset::SetMeshNum(int32 n)
 	StaticMeshComp->bGenerateOverlapEvents = true;
 	StaticMeshComp->SetNotifyRigidBodyCollision(true);
 
+	// Mystery skip
 	if (n == 3)
 	{
 		StaticMeshComp->SetStaticMesh(Mesh4);
@@ -163,6 +173,7 @@ void AAlienShipPreset::SetMeshNum(int32 n)
 
 		Velocity = 3000.0f;
 
+		// Lag en ny komponent som spiller av lyd
 		MysteryPlayer = NewObject<UAudioComponent>(this, FName("MysterySoundPlayer"));
 
 		MysteryPlayer->OnComponentCreated();
@@ -175,12 +186,11 @@ void AAlienShipPreset::SetMeshNum(int32 n)
 
 		MysteryPlayer->Sound = MysterySound;
 
-		MysteryPlayer->bAutoActivate = true;
+		MysteryPlayer->bAutoActivate = true;	// spill av lyd automatisk
 	}
-
-	
 }
 
+// Basic Line-Trace
 const FHitResult AAlienShipPreset::GetFirstShipInReach()
 {
 	FCollisionQueryParams QueryParams = FCollisionQueryParams(FName(TEXT("")), false, this);

@@ -2,7 +2,7 @@
 
 #pragma once
 #include "GameFramework/HUD.h"
-#include "Blueprint/UserWidget.h"
+#include "Blueprint/UserWidget.h"		// Vi må kunne bruker UUserWidget
 #include "SpaceInvadersHUD.generated.h"
 
 /**
@@ -18,12 +18,14 @@ public:
 	virtual void BeginPlay() override;
 	virtual void DrawHUD() override;
 
+	// Last inn blueprint widgets
 	void LoadInGameHUD();
 	void LoadMainMenu();
 	void LoadHighscoreMenu();
 	void LoadPauseMenu();
 	void LoadGameOver();
 
+	// Getters and setters
 	void SetScore(int32 n) 
 	{
 		Score = n; 
@@ -96,6 +98,7 @@ public:
 		return MainMenu;
 	}
 
+	// Lagrer poengsum, liv, highscore og hvilken meny vi er i
 	int32 Score = 0;
 	int32 HighScore = 0;
 	int32 Lives = 2;
@@ -104,6 +107,7 @@ public:
 	bool HighscoreMenu = false;
 	bool PauseMenu = false;
 
+	// Holder widgets
 	UClass* MainHUDWidgetTemplate;
 	UUserWidget* MainHUDWidget;
 
@@ -119,8 +123,10 @@ public:
 	UClass* HighscoreHUDWidgetTemplate;
 	UUserWidget* HighscoreHUDWidget;
 private:
+	// For å oppdatere widget variabler
 	UTextBlock* ScoreWidget = nullptr;
 	UTextBlock* HighscoreWidget = nullptr;
 	UTextBlock* LivesWidget = nullptr;
+
 	APlayerController* MyController;
 };

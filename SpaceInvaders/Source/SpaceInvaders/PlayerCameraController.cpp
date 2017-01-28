@@ -20,6 +20,7 @@ void UPlayerCameraController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Sett kameraet opp sånn at spilleren ser gjennom det
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	FViewTargetTransitionParams Params;
 	Params.BlendExp = 0.f;

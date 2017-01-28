@@ -6,6 +6,7 @@
 
 ASpaceInvadersHUD::ASpaceInvadersHUD()
 {
+	// Last inn klassene fra blueprints
 	FStringClassReference MainHUDWidgetRef(TEXT("/Game/SpaceInvadersHUD.SpaceInvadersHUD_C"));
 	MainHUDWidgetTemplate = MainHUDWidgetRef.TryLoadClass<UUserWidget>();
 
@@ -26,6 +27,7 @@ void ASpaceInvadersHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Last inn UUserWidget fra Class-templates
 	LoadMainMenu();
 	LoadHighscoreMenu();
 	LoadInGameHUD();
@@ -34,10 +36,12 @@ void ASpaceInvadersHUD::BeginPlay()
 
 	MyController = GetWorld()->GetFirstPlayerController();
 
+	// Vi må kunne bruke cursor i en meny
 	MyController->bShowMouseCursor = true;
 	MyController->bEnableClickEvents = true;
 	MyController->bEnableMouseOverEvents = true;
 	
+	// Starter i main menu
 	MainMenu = true;
 }
 
@@ -89,6 +93,10 @@ void ASpaceInvadersHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
+	if (!MainHUDWidget || !HighscoreHUDWidget || !MainMenuHUDWidget || !PauseMenuHUDWidget)
+		return;
+
+	// Hvis vi er i main meny og ikke i Highscore menyen
 	if (MainMenu && !HighscoreMenu)
 	{
 		if(MainHUDWidget->GetIsVisible())
@@ -105,6 +113,7 @@ void ASpaceInvadersHUD::DrawHUD()
 		if (!MyController->bEnableMouseOverEvents)
 			MyController->bEnableMouseOverEvents = true;
 	}
+	// Hvis vi ikke er i Mainmenu men i highscore menu
 	else if (!MainMenu && HighscoreMenu)
 	{
 		if (MainMenuHUDWidget->GetIsVisible())
@@ -119,6 +128,7 @@ void ASpaceInvadersHUD::DrawHUD()
 		if (!MyController->bEnableMouseOverEvents)
 			MyController->bEnableMouseOverEvents = true;
 	}
+	// Hvis vi er i pause menu
 	else if (!MainMenu && PauseMenu) 
 	{
 		if (MainHUDWidget->GetIsVisible())
@@ -133,6 +143,7 @@ void ASpaceInvadersHUD::DrawHUD()
 		if (!MyController->bEnableMouseOverEvents)
 			MyController->bEnableMouseOverEvents = true;
 	}
+	// Hvis vi er i GameOver menu
 	else if (!MainMenu && GameOver)
 	{
 		if (MainHUDWidget->GetIsVisible())
@@ -149,6 +160,7 @@ void ASpaceInvadersHUD::DrawHUD()
 	}
 	else
 	{
+		// Hvis spillet kjører og vi ikke er i en menu
 		if (PauseMenuHUDWidget->GetIsVisible())
 			PauseMenuHUDWidget->RemoveFromViewport();
 
@@ -158,6 +170,7 @@ void ASpaceInvadersHUD::DrawHUD()
 		if(!MainHUDWidget->GetIsVisible())
 			MainHUDWidget->AddToViewport();
 
+		// Oppdater menyen vi bruker i hudden vår
 		ScoreWidget->SetText(FText::FromString(FString::FromInt(Score)));
 		HighscoreWidget->SetText(FText::FromString(FString::FromInt(HighScore)));
 		LivesWidget->SetText(FText::FromString(FString::FromInt(Lives)));

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ParticleDefinitions.h"
+#include "ParticleDefinitions.h"	// Vi må vite hva et UParticleSystemComponent er
 #include "GameFramework/Actor.h"
 #include "Explosion.generated.h"
 
@@ -21,8 +21,10 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
+	// Keep track of how long you have been alive
 	float aliveTime = 2.0f;
 	float timeAlive = 0.0f;
 
+	// Pointer til partikkel systemet
 	UParticleSystemComponent* ExplosionParticleEmitter;
 };

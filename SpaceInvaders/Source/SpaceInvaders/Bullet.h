@@ -27,9 +27,12 @@ public:
 
 	FVector GetPosition();
 
+	// En Event som kalles hver gang en kule-actor overlapper en annen actor
+	// Som for-så-vidt betyr at meshen har en kollider på seg
 	UFUNCTION()
 	void OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor);
 
+	// Vi må vite hvem som fyrte av skudded er for å ikke ødelegge den
 	void SetParent(USpaceShipController* Parent)
 	{
 		SpaceShip = Parent;
@@ -46,6 +49,7 @@ private:
 	float AliveTime = 0.f;	// Should delete itself when its done / misses...
 	float MaxAliveTime = 2.0f;
 
+	// Pointer til han som skjøt
 	USpaceShipController* SpaceShip = nullptr;
 	ASpaceInvadersHUD* ourHUD;
 };

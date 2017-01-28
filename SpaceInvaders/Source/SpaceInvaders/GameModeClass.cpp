@@ -2,8 +2,8 @@
 
 #include "SpaceInvaders.h"
 #include "GameModeClass.h"
-#include "Explosion.h"
-#include "DateTime.h"
+#include "Explosion.h"		// Vi må vite hva en eksplosjon er
+#include "DateTime.h"		// For å hente UNIX time for å seede random funksjonen
 
 AGameModeClass::AGameModeClass()
 {
@@ -13,8 +13,10 @@ AGameModeClass::AGameModeClass()
 
 	DefaultPawnClass = nullptr;	// Not using a default pawn this gamemode...
 
+	// Sett HUDClass
 	HUDClass = ASpaceInvadersHUD::StaticClass();
 
+	// Last inn lyder vi bruker
 	static ConstructorHelpers::FObjectFinder<USoundWave> AlienDieSndWave(TEXT("SoundWave'/Game/Sounds/invaderkilled.invaderkilled'"));
 	AlienDieSound = AlienDieSndWave.Object;
 
@@ -35,21 +37,23 @@ void AGameModeClass::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Spawn alle skipene
 	SpawnAllShips();
 
+	// hent en peker til vår hudclasse
 	ourHUD = Cast<ASpaceInvadersHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 
+	// Hent tiden nå
 	FDateTime Now = FDateTime::Now();
-
 	int64 time = Now.ToUnixTimestamp();
 
-	UE_LOG(LogTemp, Error, TEXT("Time: %s"), *FString::FromInt(time));
-
+	// Seed random
 	FMath::SRandInit(time);
 }
 
 void AGameModeClass::SpawnActor(int32 Type, int32 Points, FTransform t)
 {
+	// Deferred actor spawn så vi kan kjøre funksjoner vår konstructoren blir kjørt
 	auto MyDeferredActor = Cast<AAlienShipPreset>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, AAlienShipPreset::StaticClass(), t));
 
 	if (MyDeferredActor)
@@ -66,14 +70,17 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 {
 	Super::TickActor( DeltaTime, TickType, ThisTickFunction );
 
+	// Hvis vi er i en meny trenger vi ikke å kjøre game-loopen
 	if (ourHUD->GameOver || ourHUD->GetMainMenu() || ourHUD->GetHighScoreMenu() || ourHUD->GetPauseMenu())
 		return;
 
+	// Hvis vi ikke har noen alienSkip så kan vi kjøre neste level
 	if (AlienArray.Num() == 0)
 	{
 		NextLevel = true;
 	}
 
+	// Ødelegg alle skip og reset variablene
 	if (NextLevel)
 	{
 		DestroyAllShips();
@@ -81,30 +88,36 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 		NextLevel = false;
 		SecondsPerStep = 1.0f;
 		StepCounter = 0.f;
-		TotalSteps = 0;
-		Steps = 6;
 		Direction = true;
 	}
 
+	// Finn et tall mellom 0 og 100000
 	float randSpawn = FMath::RandRange(0, 100000);
 
+	// Veldig rare å få et Mystery skip
 	if (randSpawn > 99990)
 	{
 		SpawnMysteryShip();
 	}
 
+	// Sjekk om det er noen AlienSkip som må slettes
 	for (AAlienShipPreset* Alien : AlienArray)
 	{
 		if (Alien->needDelete)
 		{
+			// Lydeffekt
 			UGameplayStatics::PlaySound2D(GetWorld(), AlienDieSound, 1.f, 1.f, 0.f, nullptr);
+			// Partikkeleffekt
 			CreateExplosionParticleEffect(Alien->GetActorTransform());
+			// Fjern fra arrayet
 			RemoveActor(Alien);
+			// Faktisk fjern den fra spillet
 			Alien->Destroy();
-			break;
+			break;	// kill loop
 		}
 	}
 
+	// Sjekk om Mystery Skip må slettes
 	for (AAlienShipPreset* MShip : MysteryArray)
 	{
 		if (MShip->needDelete)
@@ -115,27 +128,33 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 				FTransform ft = MShip->GetActorTransform();
 				CreateExplosionParticleEffect(ft);
 			}
+
 			MysteryArray.Remove(MShip);
 			MShip->Destroy();
 			break;
 		}
 	}
 
+	// Hvis det er på tide å hoppe
 	if (StepCounter >= SecondsPerStep)
 	{
+		// Move logic...
 		AAlienShipPreset* LeftAlien = GetMostLeftAlien();
 		AAlienShipPreset* RightAlien = GetMostRightAlien();
+
+		// Pointer guards
 		if (!LeftAlien)
 			return;
 		if (!RightAlien)
 			return;
 
-		TotalSteps++;
+		// reset counteren
 		StepCounter = 0.f;
-		//UE_LOG(LogTemp, Warning, TEXT("STEP: %s"), *FString::SanitizeFloat(SecondsPerStep));
-		SecondsPerStep = 1.f - (1.f / (0.1*AlienArray.Num() + 1.f));
-		//UE_LOG(LogTemp, Warning, TEXT("%s"), *FString::SanitizeFloat(SecondsPerStep));
 
+		// Spillet blir raskere jo mindre aliens det er
+		SecondsPerStep = 1.f - (1.f / (0.1*AlienArray.Num() + 1.f));
+
+		// Hvilken retning går vi
 		if (Direction)
 		{
 			PlayRandomMoveSound();
@@ -163,7 +182,8 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 		}
 	}
 
-	if ((ourHUD->GetScore() - LastLevelScore) > RequiredPoints && !bonusRecieved)
+	// Sjekk om vi får "bonus-liv"
+	if ((ourHUD->GetScore() - LastLevelScore) > RequiredPoints)
 	{
 		ourHUD->SetLives(ourHUD->GetLives() + 1);
 		LastLevelScore = ourHUD->GetScore();
@@ -191,6 +211,7 @@ void AGameModeClass::SetRequirement()
 
 void AGameModeClass::CreateExplosionParticleEffect(FTransform t)
 {
+	// Spawn explosjons effekt
 	t.SetScale3D(FVector(0.4f, 0.4f, 0.4f));
 	auto MyDeferredActor = Cast<AExplosion>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, AExplosion::StaticClass(), t));
 
@@ -202,6 +223,7 @@ void AGameModeClass::CreateExplosionParticleEffect(FTransform t)
 
 void AGameModeClass::SpawnMysteryShip()
 {
+	// Spawn et mystery skip med en tilfeldig poengsum (50, 100, 150, 300)
 	FTransform t = FTransform();
 	t.SetScale3D(FVector(4.f, 4.f, 4.f));
 
@@ -270,6 +292,8 @@ void AGameModeClass::MoveAllActors(FVector Step)
 		}
 	}
 
+	// Når vi er ferdig med å flytte alle actors så er det ok for alle Aliens å raycastsjekke om de kan skyte
+	// Gjør sånn at de ikke skyter på hverandre ( så ofte )
 	for (AAlienShipPreset* Alien : AlienArray)
 	{
 		Alien->SetCanCheckRayCast(true);
@@ -294,6 +318,7 @@ void AGameModeClass::DestroyAllShips()
 
 void AGameModeClass::SpawnAllShips()
 {
+	// Spawn alle skip
 	UWorld* const World = GetWorld();
 
 	float StartX = 7200.0f;
@@ -342,12 +367,9 @@ void AGameModeClass::RestartGame()
 	ourHUD->SetLives(2);
 	SecondsPerStep = 1.0f;
 	StepCounter = 0.f;
-	TotalSteps = 0;
-	Steps = 6;
 	Direction = true;
 	
 	SetRequirement();
-	
 }
 
 AAlienShipPreset* AGameModeClass::GetMostLeftAlien()

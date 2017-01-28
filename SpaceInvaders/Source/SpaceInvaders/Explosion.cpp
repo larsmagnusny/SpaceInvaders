@@ -7,27 +7,34 @@
 // Sets default values
 AExplosion::AExplosion()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	// Last inn partikkel systemet
 	ConstructorHelpers::FObjectFinder<UParticleSystem> ParticleSystem(TEXT("ParticleSystem'/Game/Particle/Explosion.Explosion'"));
 
+	// Lag partikkel systemet som en komponent på vår Actor
 	ExplosionParticleEmitter = CreateDefaultSubobject<UParticleSystemComponent>(FName("Explosion_Effect"));
 
+	// Hvis partikkel systemet har blitt lagt så legger vi det til som partikkel system
 	if (ParticleSystem.Succeeded())
 	{
 		ExplosionParticleEmitter->Template = ParticleSystem.Object;
 	}
 
+	// Ikke start den med en gang, og gjør den synlig
 	ExplosionParticleEmitter->bAutoActivate = false;
 	ExplosionParticleEmitter->SetHiddenInGame(false);
 
+	// For å fjerne warning
 	RootComponent = ExplosionParticleEmitter;
+
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 // Called when the game starts or when spawned
 void AExplosion::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Spill av partikkel systemet
 	ExplosionParticleEmitter->ActivateSystem();
 }
 
@@ -36,6 +43,7 @@ void AExplosion::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
+	// Ødelegg deg selv når tiden har gått ut
 	if (timeAlive > aliveTime)
 	{
 		Destroy();
