@@ -10,5 +10,6 @@ public class SpaceInvaders : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "Slate", "SlateCore"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
-	}
+        UEBuildConfiguration.bForceEnableExceptions = true;
+    }
 }

@@ -44,10 +44,6 @@ void ABullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Skuddene kan ikke bevege seg når vi er i pause menu
-	if (ourHUD->GetPauseMenu())
-		return;
-
 	// Sålenge tiden ikke er ute så beveger vi oss
 	if (AliveTime < MaxAliveTime)
 	{
@@ -75,6 +71,7 @@ FVector ABullet::GetPosition()
 
 void ABullet::OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor)
 {
+	ourHUD->collisionEventWasFired = true;
 	if (OtherActor && MyOverlappedActor)
 	{
 		AAlienShipPreset* test = (AAlienShipPreset*)OtherActor;
@@ -82,6 +79,7 @@ void ABullet::OnOverlapBegin(AActor* MyOverlappedActor, AActor* OtherActor)
 		// Sjekk om klassen faktisk er en AAlienShipPreset
 		if (OtherActor->IsA(AAlienShipPreset::StaticClass()))
 		{
+			
 			// Sjekk om vi ikke har nullpointere
 			if (ourHUD && test)
 			{

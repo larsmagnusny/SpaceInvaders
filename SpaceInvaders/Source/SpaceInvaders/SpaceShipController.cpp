@@ -48,7 +48,7 @@ void USpaceShipController::BeginPlay()
 
 		InputComponent->BindAction(FName("Fire"), IE_Pressed, this, &USpaceShipController::Fire);
 
-		InputComponent->BindAction(FName("PauseMenu"), IE_Pressed, this, &USpaceShipController::PauseGame);
+		InputComponent->BindAction(FName("NewGame"), IE_Pressed, this, &USpaceShipController::NewGame);
 	}
 }
 
@@ -116,7 +116,7 @@ void USpaceShipController::TickComponent( float DeltaTime, ELevelTick TickType, 
 		return;
 	}
 
-	if (ourHUD->GameOver || ourHUD->GetMainMenu() || ourHUD->GetHighScoreMenu() || ourHUD->GetPauseMenu())
+	if (ourHUD->GameOver)
 		return;
 
 	Rotation = GetOwner()->GetActorRotation();
@@ -130,12 +130,6 @@ void USpaceShipController::TickComponent( float DeltaTime, ELevelTick TickType, 
 			FireCooldown = false;
 			ShotTimer = 0.f;
 		}
-	}
-
-	if (MovingLeft && MovingRight)
-	{
-		// Do nothing here, because the movements cancel eachother out...
-		return;
 	}
 
 	if (!MovingLeft && !MovingRight)
@@ -254,6 +248,9 @@ void USpaceShipController::OnOverlapBegin(AActor* MyOverlappedActor, AActor* Oth
 	if (!ourHUD) {
 		InitHUD();
 	}
+
+	ourHUD->collisionEventWasFired = true;
+
 	int32 ourLives = ourHUD->GetLives();
 
 	if (ourLives > 0) {
@@ -284,16 +281,11 @@ void USpaceShipController::CreateExplosionParticleEffect(FTransform t)
 	}
 }
 
-void USpaceShipController::PauseGame()
+void USpaceShipController::NewGame()
 {
-	if (!ourHUD)
-	{
-		InitHUD();
-	}
-
 	if (ourHUD)
 	{
-		if (!ourHUD->GetMainMenu())
-			ourHUD->SetPauseMenu(!ourHUD->GetPauseMenu());
+		if(ourHUD->GameOver)
+			UGameplayStatics::OpenLevel(GetWorld(), FName("MainGame"));
 	}
 }

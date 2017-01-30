@@ -70,10 +70,6 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 {
 	Super::TickActor( DeltaTime, TickType, ThisTickFunction );
 
-	// Hvis vi er i en meny trenger vi ikke å kjøre game-loopen
-	if (ourHUD->GameOver || ourHUD->GetMainMenu() || ourHUD->GetHighScoreMenu() || ourHUD->GetPauseMenu())
-		return;
-
 	// Hvis vi ikke har noen alienSkip så kan vi kjøre neste level
 	if (AlienArray.Num() == 0)
 	{
@@ -135,6 +131,9 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 		}
 	}
 
+	if (ourHUD->GameOver)
+		return;
+
 	// Hvis det er på tide å hoppe
 	if (StepCounter >= SecondsPerStep)
 	{
@@ -189,6 +188,8 @@ void AGameModeClass::TickActor(float DeltaTime, ELevelTick TickType, FActorTickF
 		LastLevelScore = ourHUD->GetScore();
 		SetRequirement();
 	}
+
+	
 
 	StepCounter += DeltaTime;
 }

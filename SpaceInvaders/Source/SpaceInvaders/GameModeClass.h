@@ -66,6 +66,8 @@ private:
 	float StepCounter = 0.0f;		// Tell antall sekund mellom "hopp" av fiender
 	float SecondsPerStep = 1.0f;    // Vi starter på 1.0s
 	bool Direction = true;			// Hvilken retning vi hopper
+	bool nextFrameUpdateHUD = false;
+	bool hasUpdated = false;
 
 	int32 RequiredPoints = 1000;	// Hvor mange poeng trenger vi for å få et ekstra liv
 	int32 LastLevelScore = 0;		// Lagre poeng når vi får ett nytt liv

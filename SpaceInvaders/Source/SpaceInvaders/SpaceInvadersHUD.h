@@ -20,10 +20,59 @@ public:
 
 	// Last inn blueprint widgets
 	void LoadInGameHUD();
-	void LoadMainMenu();
-	void LoadHighscoreMenu();
-	void LoadPauseMenu();
-	void LoadGameOver();
+
+	FORCEINLINE void DrawJoyRect(
+		float X, float Y,
+		float Width, float Height,
+		const FLinearColor& Color
+	)
+	{
+		if (!Canvas) return;
+		//
+
+		FCanvasTileItem RectItem(
+			FVector2D(X, Y),
+			FVector2D(Width, Height),
+			Color
+		);
+
+		RectItem.BlendMode = SE_BLEND_Translucent;
+		Canvas->DrawItem(RectItem);
+	}
+
+	FORCEINLINE void DrawJoyText(
+		UFont*	TheFont,
+		const FString& TheStr,
+		const float& X, const float& Y,
+		const FLinearColor& TheColor,
+		const float& TheScale,
+		bool DrawOutline = false,
+		const FLinearColor OutlineColor = FLinearColor(0, 0, 0, 1)
+	) {
+		if (!Canvas) return;
+		//
+
+		//Text and Font
+		FCanvasTextItem NewText(
+			FVector2D(X, Y),
+			FText::FromString(TheStr),
+			TheFont,
+			TheColor
+		);
+
+		//Text Scale
+		NewText.Scale.Set(TheScale, TheScale);
+
+		//Outline gets its alpha from the main color
+		NewText.bOutlined = true;
+		NewText.OutlineColor = OutlineColor;
+		NewText.OutlineColor.A = TheColor.A * 2;
+
+		//Draw
+		Canvas->DrawItem(NewText);
+	}
+
+	void DrawGameOverScreen();
 
 	// Getters and setters
 	void SetScore(int32 n) 
@@ -65,39 +114,6 @@ public:
 		return GameOver; 
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "Menu")
-	void SetMainMenu(bool val)
-	{
-		MainMenu = val;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "Menu")
-	void SetHighScoreMenu(bool val)
-	{
-		HighscoreMenu = val;
-	}
-
-	bool GetHighScoreMenu()
-	{
-		return HighscoreMenu;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "Menu")
-	void SetPauseMenu(bool val)
-	{
-		PauseMenu = val;
-	}
-
-	bool GetPauseMenu()
-	{
-		return PauseMenu;
-	}
-
-	bool GetMainMenu()
-	{
-		return MainMenu;
-	}
-
 	// Lagrer poengsum, liv, highscore og hvilken meny vi er i
 	int32 Score = 0;
 	int32 HighScore = 0;
@@ -107,21 +123,15 @@ public:
 	bool HighscoreMenu = false;
 	bool PauseMenu = false;
 
+	bool collisionEventWasFired = false;
+
 	// Holder widgets
-	UClass* MainHUDWidgetTemplate;
-	UUserWidget* MainHUDWidget;
+	UClass* MainHUDWidgetTemplate = nullptr;
+	UUserWidget* MainHUDWidget = nullptr;
 
-	UClass* MainMenuHUDWidgetTemplate;
-	UUserWidget* MainMenuHUDWidget;
+	UClass* GameOverHUDWidgetTemplate = nullptr;
+	UUserWidget* GameOverHUDWidget = nullptr;
 
-	UClass* GameOverHUDWidgetTemplate;
-	UUserWidget* GameOverHUDWidget;
-
-	UClass* PauseMenuHUDWidgetTemplate;
-	UUserWidget* PauseMenuHUDWidget;
-
-	UClass* HighscoreHUDWidgetTemplate;
-	UUserWidget* HighscoreHUDWidget;
 private:
 	// For å oppdatere widget variabler
 	UTextBlock* ScoreWidget = nullptr;
@@ -129,4 +139,6 @@ private:
 	UTextBlock* LivesWidget = nullptr;
 
 	APlayerController* MyController;
+
+	UFont* OurFont = nullptr;
 };

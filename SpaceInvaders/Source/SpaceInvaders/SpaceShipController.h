@@ -31,6 +31,8 @@ public:
 
 	void Fire();
 	void Die();
+
+	void NewGame();
 	
 	void InitHUD();
 	
